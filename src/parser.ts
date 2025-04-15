@@ -1,5 +1,5 @@
-"use strict";
-const fs = require('fs');
+import fs from 'fs';
+
 const wordMap = require('./wordMap');
 function getWordMap(documentTitle, callback) {
     fs.readFile(documentTitle, (err, content) => {

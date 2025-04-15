@@ -1,6 +1,7 @@
-"use strict";
+import readline from 'readline';
+
 const wordMap = require('./wordMap');
-const readline = require('readline').createInterface({
+const userInput = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
@@ -41,11 +42,11 @@ function generateParagraph(initialWord, wordMap, max) {
     return generatedWords.join('');
 }
 function generateText() {
-    readline.question('First word to generate:', word => {
+    userInput.question('First word to generate:', word => {
         const generatedText = generateParagraph(word, wordMap, 100);
         console.log(`Your paragraph:
         ${generatedText}`);
-        readline.close();
+        userInput.close();
     });
 }
 generateText();
