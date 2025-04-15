@@ -1,1 +1,12 @@
-.wordMap.js
+# Node modules
+/node_modules/
+
+# TypeScript output and compiled JS files
+/dist/
+*.js
+
+# Training data
+/data/
+
+# Environment files
+.env
