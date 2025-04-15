@@ -1,11 +1,14 @@
 import readline from 'readline';
 
-const wordMap = require('./wordMap');
+type wordMap = Record<string, Record<string, number>>;
+const wordMap: wordMap = require('../models/wordMap');
+
 const userInput = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
-function getNextWord(word, wordMap) {
+
+function getNextWord(word:string, wordMap: wordMap) {
     const nextLikelyWords = Object.entries(wordMap[word]);
     // Get weight of all words and random number
     const totalWeight = nextLikelyWords.map(entry => entry[1]).reduce((acc, cur) => acc += cur);
@@ -18,7 +21,8 @@ function getNextWord(word, wordMap) {
         }
     }
 }
-function generateParagraph(initialWord, wordMap, max) {
+
+function generateParagraph(initialWord: string, wordMap: wordMap, max: number) {
     // Ensure word exists
     if (!wordMap[initialWord]) {
         console.log(`The word '${initialWord}' doesn't appear in our database. Using a placeholder instead.`);
@@ -29,7 +33,7 @@ function generateParagraph(initialWord, wordMap, max) {
     let word = initialWord;
     let done = false;
     while (done === false) {
-        const newWord = getNextWord(word, wordMap);
+        const newWord = getNextWord(word, wordMap) ?? ' ';
         const stopCharacters = new Set([". ", "! ", "? "]);
         generatedWords.push(newWord);
         numberGenerated += 1;
@@ -41,6 +45,7 @@ function generateParagraph(initialWord, wordMap, max) {
     }
     return generatedWords.join('');
 }
+
 function generateText() {
     userInput.question('First word to generate:', word => {
         const generatedText = generateParagraph(word, wordMap, 100);

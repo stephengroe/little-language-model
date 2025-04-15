@@ -1,7 +1,21 @@
 import fs from 'fs';
 
-const wordMap = require('./wordMap');
-function getWordMap(documentTitle, callback) {
+// List of Dickens books for source data
+const books = [
+    'a-christmas-carol.txt',
+    'american-notes.txt',
+    'bleak-house.txt',
+    'david-copperfield.txt',
+    'hard-times.txt',
+    'little-dorrit.txt',
+    'nicholas-nickleby.txt',
+    'our-mutual-friend.txt',
+    'the-old-curiosity-shop.txt',
+    'the-pickwick-papers.txt',
+];
+
+// Get content from text file
+function getWordMap(documentTitle: string, callback: Function) {
     fs.readFile(documentTitle, (err, content) => {
         if (err) {
             return callback(err);
@@ -14,10 +28,15 @@ function getWordMap(documentTitle, callback) {
         }
     });
 }
-function buildWordMap(wordList) {
+
+type wordMap = Record<string, Record<string, number>>;
+
+function buildWordMap(wordList: string[]) {
+    let wordMap: wordMap = {};
     for (let i = 0; i < wordList.length; i++) {
         const currentWord = wordList[i];
         const nextWord = wordList[i + 1];
+
         // Add current word to map
         if (!wordMap[currentWord]) {
             wordMap[currentWord] = {};
@@ -33,28 +52,19 @@ function buildWordMap(wordList) {
     }
     return wordMap;
 }
+
+// Import model, or create new one
 console.log(`Generating...`);
-const books = [
-    'a-christmas-carol.txt',
-    'american-notes.txt',
-    'bleak-house.txt',
-    'david-copperfield.txt',
-    'hard-times.txt',
-    'little-dorrit.txt',
-    'nicholas-nickleby.txt',
-    'our-mutual-friend.txt',
-    'the-old-curiosity-shop.txt',
-    'the-pickwick-papers.txt',
-];
+
 for (const book of books) {
-    getWordMap(`./dickens/${book}`, (err, result) => {
+    getWordMap(`./data/dickens/${book}`, (err: unknown, result: wordMap) => {
         if (err) {
             console.log(`Error: ${err}`);
         }
         else {
             console.log(`Saving ${book}...`);
             const fileContent = `module.exports = ${JSON.stringify(result)}`;
-            fs.writeFile('./wordMap.js', fileContent, (fsErr) => {
+            fs.writeFile('./models/wordMap.js', fileContent, (fsErr) => {
                 if (fsErr) {
                     console.log(`File write error: ${fsErr}`);
                 }

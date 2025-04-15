@@ -12,6 +12,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^22.14.1",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
   }
