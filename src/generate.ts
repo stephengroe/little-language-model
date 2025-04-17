@@ -47,10 +47,16 @@ function generateParagraph(initialWord: string, wordMap: wordMap, max: number) {
 }
 
 // Softmax function
-function applySoftmax(weightedArray: number[]): number[] {
-    // Subtracting max value for numerical stability
+function applySoftmax(weightedArray: number[], temperature: number = 1): number[] {
     const max = Math.max(...weightedArray);
-    const expNumbers = weightedArray.map(weight => Math.exp(weight - max));
+
+    // Return argmax if temperature is zero (prevent divide-by-zero error)
+    if (temperature === 0) {
+        return weightedArray.map(logit => (logit === max ? 1 : 0));
+    }
+
+    // Subtracting max value for numerical stability
+    const expNumbers = weightedArray.map(logit => Math.exp((logit - max) / temperature));
     const denominator = expNumbers.reduce((acc, curr) => acc += curr, 0);
     const softMaxValues = expNumbers.map(expNum => expNum / denominator);
     return softMaxValues;
