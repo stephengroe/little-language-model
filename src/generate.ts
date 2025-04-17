@@ -46,6 +46,16 @@ function generateParagraph(initialWord: string, wordMap: wordMap, max: number) {
     return generatedWords.join('');
 }
 
+// Softmax function
+function applySoftmax(weightedArray: number[]): number[] {
+    // Subtracting max value for numerical stability
+    const max = Math.max(...weightedArray);
+    const expNumbers = weightedArray.map(weight => Math.exp(weight - max));
+    const denominator = expNumbers.reduce((acc, curr) => acc += curr, 0);
+    const softMaxValues = expNumbers.map(expNum => expNum / denominator);
+    return softMaxValues;
+}
+
 function generateText() {
     userInput.question('First word to generate:', word => {
         const generatedText = generateParagraph(word, wordMap, 100);
