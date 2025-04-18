@@ -56,6 +56,10 @@ function generateParagraph(initialWord: string, wordMap: wordMap, max: number) {
         // So we finish on the end of a sentence
         if (numberGenerated >= max && stopCharacters.has(newWord)) {
             done = true;
+        
+            // Failsafe in case we don't run into a punctuation mark
+        } else if (numberGenerated > (max * 1.5)) {
+            done = true;
         }
     }
     return generatedWords.join('');
