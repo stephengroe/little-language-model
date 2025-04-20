@@ -1,8 +1,10 @@
 import fs from 'fs';
-import buildTokenList from './tokenizer';
+
+// Data structure for individual words for training
+type Corpus = string[][];
 
 // List of Dickens books for source data
-const books = [
+const bookTitles = [
     'a-christmas-carol',
     'american-notes',
     'bleak-house',
@@ -15,68 +17,53 @@ const books = [
     'the-pickwick-papers',
 ];
 
-// Get content from text file
-function getWordMap(documentTitle: string, callback: Function) {
-    fs.readFile(`./data/dickens/${documentTitle}.txt`, (err, data) => {
+// Constants for tokenization boundaries
+const wordBoundaryToken = '</w>';
+const bookBoundaryToken = '<|sep|>';
+
+// Build corpus from file
+function buildCorpus(content: string): Corpus {
+    // Divide into words
+    const words = content.split(/\s+/);
+    // Divide into characters with word boundary at the end
+    let corpus = words.map(word => [...word.split(''), wordBoundaryToken]);
+    // Add file separator token
+    corpus.push([bookBoundaryToken]);
+    // Log progress
+    console.log(`Built corpus`);
+    return corpus;
+}
+
+// If corpus.txt exists, clear it to prevent writing twice
+fs.writeFileSync('./models/corpus.txt', '');
+
+// Iterate over all books
+for (const bookTitle of bookTitles) {
+    // Load book file
+    fs.readFile(`./data/dickens/${bookTitle}.txt`, (err, data) => {
         if (err) {
-            return callback(err);
-        }
-        else {
-            // Tokenize document
+            // Error handling if document can't be read
+            console.error(`Error reading ${bookTitle}.txt: ${err}`);
+            return;
+        } else {
+            // Log progress
+            console.log(`Loading ${bookTitle}...`)
+            // Convert book text to string
             const content = data.toString();
-            buildTokenList(content, documentTitle);
+            // Build corpus from document
+            const corpus: Corpus = buildCorpus(content);
+            // Convert datatype of corpus
+            const corpusText = JSON.stringify(corpus);
 
-            // Replace line breaks with spaces, break into words and punctuation
-            const words = data.toString().split('\r\n').join(' ').split(/\b(?!\s)/);
-            const wordMap = buildWordMap(words);
-            callback(null, wordMap);
-        }
-    });
-}
-
-type wordMap = Record<string, Record<string, number>>;
-
-function buildWordMap(wordList: string[]) {
-    let wordMap: wordMap = {};
-    for (let i = 0; i < wordList.length; i++) {
-        const currentWord = wordList[i];
-        const nextWord = wordList[i + 1];
-
-        // Add current word to map
-        if (!wordMap[currentWord]) {
-            wordMap[currentWord] = {};
-        }
-        // Add next word probability
-        const nextLikelyWord = wordMap[currentWord];
-        if (!nextLikelyWord[nextWord]) {
-            nextLikelyWord[nextWord] = 1;
-        }
-        else {
-            nextLikelyWord[nextWord] = nextLikelyWord[nextWord] + 1;
-        }
-    }
-    return wordMap;
-}
-
-// Import model, or create new one
-console.log(`Generating...`);
-
-for (const book of books) {
-    getWordMap(book, (err: unknown, result: wordMap) => {
-        if (err) {
-            console.log(`Error: ${err}`);
-        }
-        else {
-            console.log(`Saving ${book}...`);
-            const fileContent = `module.exports = ${JSON.stringify(result)}`;
-            fs.writeFile('./models/wordMap.js', fileContent, (fsErr) => {
-                if (fsErr) {
-                    console.log(`File write error: ${fsErr}`);
+            // Save corpus to file
+            fs.appendFile(`./models/corpus.txt`, corpusText, (err) => {
+                if (err) {
+                    console.error(`Error writing corpus: ${err}`);
+                } else {
+                    // Log success
+                    console.log(`Saved file ${bookTitle}`);
                 }
-                else {
-                    console.log(`Saved`);
-                }
-            });
+            })
         }
     });
 }
