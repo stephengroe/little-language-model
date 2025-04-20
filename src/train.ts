@@ -1,28 +1,33 @@
 import fs from 'fs';
+import buildTokenList from './tokenizer';
 
 // List of Dickens books for source data
 const books = [
-    'a-christmas-carol.txt',
-    'american-notes.txt',
-    'bleak-house.txt',
-    'david-copperfield.txt',
-    'hard-times.txt',
-    'little-dorrit.txt',
-    'nicholas-nickleby.txt',
-    'our-mutual-friend.txt',
-    'the-old-curiosity-shop.txt',
-    'the-pickwick-papers.txt',
+    'a-christmas-carol',
+    'american-notes',
+    'bleak-house',
+    'david-copperfield',
+    'hard-times',
+    'little-dorrit',
+    'nicholas-nickleby',
+    'our-mutual-friend',
+    'the-old-curiosity-shop',
+    'the-pickwick-papers',
 ];
 
 // Get content from text file
 function getWordMap(documentTitle: string, callback: Function) {
-    fs.readFile(documentTitle, (err, content) => {
+    fs.readFile(`./data/dickens/${documentTitle}.txt`, (err, data) => {
         if (err) {
             return callback(err);
         }
         else {
+            // Tokenize document
+            const content = data.toString();
+            buildTokenList(content, documentTitle);
+
             // Replace line breaks with spaces, break into words and punctuation
-            const words = content.toString().split('\r\n').join(' ').split(/\b(?!\s)/);
+            const words = data.toString().split('\r\n').join(' ').split(/\b(?!\s)/);
             const wordMap = buildWordMap(words);
             callback(null, wordMap);
         }
@@ -57,7 +62,7 @@ function buildWordMap(wordList: string[]) {
 console.log(`Generating...`);
 
 for (const book of books) {
-    getWordMap(`./data/dickens/${book}`, (err: unknown, result: wordMap) => {
+    getWordMap(book, (err: unknown, result: wordMap) => {
         if (err) {
             console.log(`Error: ${err}`);
         }
