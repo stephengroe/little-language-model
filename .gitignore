@@ -8,5 +8,8 @@
 # Training data
 /data/
 
+# Models and other large datasets
+/models/
+
 # Environment files
 .env
