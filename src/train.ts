@@ -21,6 +21,22 @@ const bookTitles = [
 const wordBoundaryToken = '</w>';
 const bookSeparatorToken = '<|sep|>';
 
+// Read file and log result
+async function openFile(bookTitle: string): Promise<string> {
+    // Log progress
+    console.log(`Loading ${bookTitle}...`)
+
+    try {
+        const data = await readFile(`./data/dickens/${bookTitle}.txt`);
+        // Convert book text to string and return
+        const content = data.toString();
+        return content;
+    } catch (err) {
+        // Error handling if document can't be read
+        throw new Error(`Error reading ${bookTitle}.txt: ${err}`);
+    }
+}
+
 // Build corpus from file
 function buildCorpus(content: string): Corpus {
     // Divide into words
@@ -34,45 +50,30 @@ function buildCorpus(content: string): Corpus {
     return corpus;
 }
 
-// Read file and log result
-function openFile(bookTitle: string): string {
-    // Log progress
-    console.log(`Loading ${bookTitle}...`)
+// Build entire corpus
+async function buildCompleteCorpus(bookTitles: string[]) {
+    // Define corpus array
+    let corpus: Corpus = [];
 
-    try {
-        const data = readFile(`./data/dickens/${bookTitle}.txt`);
-        // Convert book text to string and return
-        const content = data.toString();
-        return content;
-    } catch (err) {
-        // Error handling if document can't be read
-        throw new Error(`Error reading ${bookTitle}.txt: ${err}`);
+    // Iterate over all books
+    for (const bookTitle of bookTitles) {
+        // Load book file
+        const content = await openFile(bookTitle);
+        // Build corpus from document
+        const bookCorpus = buildCorpus(content);
+        // Append to corpus array
+        corpus = corpus.concat(bookCorpus);
     }
-}
 
-// Append to corpus document
-function appendBookToCorpus(content: string) {
-    // Log progress
-    console.log(`Appending to corpus...`);
-
-    try {
-        appendFile(`./models/corpus.txt`, content);
-    } catch (err) {
-        throw new Error(`Error writing to corpus: ${err}`)
-    }
-}
-
-// If corpus.txt exists, clear it to prevent writing twice
-await writeFile('./models/corpus.txt', '');
-
-// Iterate over all books
-for (const bookTitle of bookTitles) {
-    // Load book file
-    const content = openFile(bookTitle);
-    // Build corpus from document
-    const corpus: Corpus = buildCorpus(content);
     // Convert to string
-    const corpusString = corpus.toString();
-    // Write to corpus
-    appendBookToCorpus(corpusString);
+    const corpusString = JSON.stringify(corpus);
+
+    // If corpus.txt exists, clear it to prevent writing twice
+    await writeFile('./models/corpus.txt', '');
+    // Write corpus to disk
+    await writeFile('./models/corpus.txt', corpusString);
+    // Log success
+    console.log(`Saved corpus to disk`)
 }
+
+buildCompleteCorpus(bookTitles);
