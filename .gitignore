@@ -5,11 +5,10 @@
 /dist/
 *.js
 
-# Training data
+# Training data, models, output files
 /data/
-
-# Models and other large datasets
 /models/
+/output/
 
 # Environment files
 .env

@@ -1,7 +1,7 @@
-import { readFile, writeFile, appendFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 
 // Data structure for individual words for training
-type Corpus = string[][];
+export type Corpus = string[][];
 
 // List of Dickens books for source data
 const bookTitles = [
