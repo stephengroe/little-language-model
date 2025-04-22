@@ -3,8 +3,18 @@ import { Corpus } from './corpus';
 
 // Load corpus text into memory
 async function loadCorpus(): Promise<Corpus> {
-  const data = await readFile('./models/corpus.txt');
-  const corpus: Corpus = JSON.parse(data);
+  // Define data
+  let data: Buffer;  
+
+  // Read from file
+  try {
+    data = await readFile('./models/corpus.txt');
+  } catch (err) {
+    throw new Error(`Cannot read corpus.txt: ${err}`);
+  }
+
+  // Parse corpus
+  const corpus: Corpus = JSON.parse(data.toString());
   return corpus;
 }
 
@@ -18,9 +28,14 @@ async function generateCharList(corpus: Corpus) {
   const uniqueCharactersString = JSON.stringify([...uniqueCharacters]);
   
   // Save to disk
-  await writeFile('./output/charlist.txt', uniqueCharactersString);
+  try {
+    await writeFile('./output/charlist.json', uniqueCharactersString);
+  } catch (err) {
+    throw new Error(`Could not write file charlist.json: ${err}`);
+  }
 }
 
-loadCorpus().then(corpus => {
-  generateCharList(corpus);
-});
+(async () => {
+  const corpus = await loadCorpus();
+  await generateCharList(corpus);
+})();
