@@ -162,6 +162,8 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
   let mergedTokens = 0;
   // Create working version of corpus (deep copy)
   let mergedCorpus = corpus.map(word => [...word]);
+  // Create vocabulary list
+  let vocabulary = new Map<string, number>();
 
   // While we still have merges left, continue
   while (mergedTokens < vocabularySize) {
@@ -169,11 +171,17 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
     const mostCommonPair = findMostCommonPair(mergedCorpus);
     // Merge that pair
     mergedCorpus = mergeTokenPair(mergedCorpus, mostCommonPair);
+    // Add to vocabulary
+    vocabulary.set(mostCommonPair, mergedTokens);
     // Increment merged tokens
     mergedTokens += 1;
     // Log progress
     console.log(`Merged token ${mergedTokens}/${vocabularySize}: ${mostCommonPair}`);
   }
+
+  // Save vocabulary to disk
+  const vocabularyString = JSON.stringify(Object.fromEntries(vocabulary));
+  (async () => await saveFile('./output/', 'vocabulary.txt', vocabularyString))();
 
   return mergedCorpus;
 }
@@ -198,8 +206,10 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
 
   // Replace token pairs
   const vocabularySize = 10;
+  const startTime = Date.now();
   console.log(`Replacing token pairs for ${vocabularySize} tokens...`)
   const mergedCorpus = mergeAllTokenPairs(corpus, vocabularySize);
+  console.log(`Finished in ${Math.round((Date.now() - startTime) / 1000 / 60 * 10) / 10} minutes`);
   await saveFile('./output/', 'merged-corpus.txt', JSON.stringify(mergedCorpus));
 
   // Log success
