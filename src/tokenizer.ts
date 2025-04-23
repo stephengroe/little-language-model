@@ -130,14 +130,12 @@ function findMostCommonPair(corpus: Corpus): string {
 }
 
 // Merge token pairs in corpus
-function mergeTokenPair(corpus: Corpus, targetTokenPair: string): Corpus {
-  // Create working copy of corpus (deep copy)
-  let mergedCorpus = corpus.map(word => [...word]);
-
+// NOTE: This mutates in place for performance reasons
+function mergeTokenPairInPlace(corpus: Corpus, targetTokenPair: string): Corpus {
   // Iterate over all words in corpus
-  for (let w = 0; w < mergedCorpus.length; w++) {
+  for (let w = 0; w < corpus.length; w++) {
     // Reference word directly to allow mutations
-    let word = mergedCorpus[w];
+    let word = corpus[w];
     // Sliding window across all letters in each word
     for (let i=0; i<word.length; i++) {
       // If we're at the last character, move to the next word
@@ -153,7 +151,7 @@ function mergeTokenPair(corpus: Corpus, targetTokenPair: string): Corpus {
     }
   }
 
-  return mergedCorpus;
+  return corpus;
 }
 
 // Merge all token pairs
@@ -170,7 +168,7 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
     // Find most common pair
     const mostCommonPair = findMostCommonPair(mergedCorpus);
     // Merge that pair
-    mergedCorpus = mergeTokenPair(mergedCorpus, mostCommonPair);
+    mergedCorpus = mergeTokenPairInPlace(mergedCorpus, mostCommonPair);
     // Add to vocabulary
     vocabulary.set(mostCommonPair, mergedTokens);
     // Increment merged tokens
@@ -206,10 +204,10 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
 
   // Replace token pairs
   const vocabularySize = 10;
-  const startTime = Date.now();
   console.log(`Replacing token pairs for ${vocabularySize} tokens...`)
+  console.time(`Token merging`)
   const mergedCorpus = mergeAllTokenPairs(corpus, vocabularySize);
-  console.log(`Finished in ${Math.round((Date.now() - startTime) / 1000 / 60 * 10) / 10} minutes`);
+  console.timeEnd(`Token merging`);
   await saveFile('./output/', 'merged-corpus.txt', JSON.stringify(mergedCorpus));
 
   // Log success
