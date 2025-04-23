@@ -54,7 +54,7 @@ async function generateCharList(corpus: Corpus) {
 }
 
 // Create frequency map of byte pairs
-function buildFrequencyMap(corpus: Corpus, charlist: string[]): Map<string, number> {
+function buildFrequencyMap(corpus: Corpus): Map<string, number> {
   // Create new Map to store frequency of byte pairs
   const frequencyMap = new Map<string, number>();
 
@@ -68,16 +68,8 @@ function buildFrequencyMap(corpus: Corpus, charlist: string[]): Map<string, numb
       // Otherwise form byte pair from adjacent characters
       const bytePair = `${word[i]}${word[i+1]}`;
 
-      // Add to frequency map or increment
-      if (frequencyMap.has(bytePair)) {
-        // Get current tally
-        const tally = frequencyMap.get(bytePair) ?? 0; // In case undefined for TS
-        // Increment by one
-        frequencyMap.set(bytePair, tally + 1);
-      } else {
-        // Otherwise we'll create a new entry
-        frequencyMap.set(bytePair, 1);
-      }
+      // Add new entry to frequency map or increment existing
+      frequencyMap.set(bytePair, (frequencyMap.get(bytePair) ?? 0) + 1);
     }
   }
 
@@ -101,6 +93,6 @@ async function writeBytePairs(bytePairs: Map<string, number> ) {
   
   const charlist = await loadCharList();
 
-  const frequencyMap = buildFrequencyMap(corpus, charlist);
+  const frequencyMap = buildFrequencyMap(corpus);
   writeBytePairs(frequencyMap);
 })();
