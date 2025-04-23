@@ -1,5 +1,4 @@
 import { readFile, writeFile } from 'fs/promises';
-import { json } from 'stream/consumers';
 
 // Data structure for individual words for training
 export type Corpus = string[][];
@@ -132,11 +131,13 @@ function findMostCommonPair(corpus: Corpus): string {
 
 // Merge token pairs in corpus
 function mergeTokenPair(corpus: Corpus, targetTokenPair: string): Corpus {
-  // Create working copy of corpus
-  let mergedCorpus = corpus.slice();
+  // Create working copy of corpus (deep copy)
+  let mergedCorpus = corpus.map(word => [...word]);
 
   // Iterate over all words in corpus
-  for (let word of mergedCorpus) {
+  for (let w = 0; w < mergedCorpus.length; w++) {
+    // Reference word directly to allow mutations
+    let word = mergedCorpus[w];
     // Sliding window across all letters in each word
     for (let i=0; i<word.length; i++) {
       // If we're at the last character, move to the next word
@@ -145,7 +146,9 @@ function mergeTokenPair(corpus: Corpus, targetTokenPair: string): Corpus {
       // If token pair matches target token pair
       if (`${word[i]}${word[i+1]}` === targetTokenPair) {
         // Merge tokens into one
-        word = word.splice(i, 2, targetTokenPair);
+        word.splice(i, 2, targetTokenPair);
+        // Skip the merged token
+        i += 1;
       }
     }
   }
@@ -157,13 +160,13 @@ function mergeTokenPair(corpus: Corpus, targetTokenPair: string): Corpus {
 function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
   // Start count of merged tokens
   let mergedTokens = 0;
-  // Create working version of corpus
-  let mergedCorpus = corpus;
+  // Create working version of corpus (deep copy)
+  let mergedCorpus = corpus.map(word => [...word]);
 
   // While we still have merges left, continue
   while (mergedTokens < vocabularySize) {
     // Find most common pair
-    const mostCommonPair = findMostCommonPair(corpus);
+    const mostCommonPair = findMostCommonPair(mergedCorpus);
     // Merge that pair
     mergedCorpus = mergeTokenPair(mergedCorpus, mostCommonPair);
     // Increment merged tokens
@@ -194,7 +197,7 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
   await saveFile('./output/', 'bytepairs.json', frequencyMapString);
 
   // Replace token pairs
-  const vocabularySize = 100;
+  const vocabularySize = 10;
   console.log(`Replacing token pairs for ${vocabularySize} tokens...`)
   const mergedCorpus = mergeAllTokenPairs(corpus, vocabularySize);
   await saveFile('./output/', 'merged-corpus.txt', JSON.stringify(mergedCorpus));
