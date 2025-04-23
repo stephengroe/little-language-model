@@ -1,56 +1,39 @@
 import { readFile, writeFile } from 'fs/promises';
 import { Corpus } from './corpus';
-import { write } from 'fs';
 
-// Load corpus text into memory
-async function loadCorpus(): Promise<Corpus> {
-  // Define data
-  let data: Buffer;  
+// Utility function to read from disk
+async function loadFile(filePath: string, fileName: string): Promise<string> {
+  let data: Buffer;
 
-  // Read from file
   try {
-    data = await readFile('./models/corpus.txt');
+    data = await readFile(`${filePath}${fileName}`);
   } catch (err) {
-    throw new Error(`Cannot read corpus.txt: ${err}`);
+    throw new Error(`Cannot read ${filePath}${fileName}: ${err}`);
   }
 
-  // Parse corpus
-  const corpus: Corpus = JSON.parse(data.toString());
-  return corpus;
+  const convertedData = data.toString();
+  return convertedData;
 }
 
-// Load character list into memory
-async function loadCharList(): Promise<string[]> {
-  // Define data
-  let data: Buffer;  
-
-  // Read from file
+// Utility function to write to disk
+async function saveFile(filePath: string, fileName: string, data: string) {
   try {
-    data = await readFile('./output/charlist.json');
+    writeFile(`${filePath}${fileName}`, data);
   } catch (err) {
-    throw new Error(`Cannot read charlist.json: ${err}`);
+    throw new Error(`Unable to save ${filePath}${fileName}: ${err}`);
   }
-
-  // Parse charlist
-  const charlist: string[] = JSON.parse(data.toString());
-  return charlist;
 }
 
 // Create list of all unique characters
-async function generateCharList(corpus: Corpus) {
+async function generateCharList(corpus: Corpus): Promise<string[]> {
   // Flatten array of the corpus
-  const flattenedCorpus = corpus.flat(Infinity);
+  const flattenedCorpus: string[] = corpus.flat(Infinity) as string[];
   // Create Set with only unique characters
   const uniqueCharacters = new Set(flattenedCorpus);
-  // Conver this to an array, then stringified JSON
-  const uniqueCharactersString = JSON.stringify([...uniqueCharacters]);
-  
-  // Save to disk
-  try {
-    await writeFile('./output/charlist.json', uniqueCharactersString);
-  } catch (err) {
-    throw new Error(`Could not write file charlist.json: ${err}`);
-  }
+  // Conver this to an array
+  const uniqueCharacterArray = Array.from(uniqueCharacters);
+
+  return uniqueCharacterArray;
 }
 
 // Create frequency map of byte pairs
@@ -76,23 +59,17 @@ function buildFrequencyMap(corpus: Corpus): Map<string, number> {
   return frequencyMap;
 }
 
-// Save byte pairs to disk
-async function writeBytePairs(bytePairs: Map<string, number> ) {
-  const bytePairJSON = JSON.stringify(Object.fromEntries(bytePairs));
-  try {
-    await writeFile('./output/bytepairs.json', bytePairJSON);
-  } catch (err) {
-    throw new Error(`Could not write to file: ${err}`);
-  }
-}
-
-
 (async () => {
-  const corpus = await loadCorpus();
-  await generateCharList(corpus);
+  const data = await loadFile('./models/', 'corpus.txt');
+  const corpus: Corpus = JSON.parse(data);
   
-  const charlist = await loadCharList();
+  // Build character list
+  const charlist = await generateCharList(corpus);
+  await saveFile('./output/', 'charlist.txt', JSON.stringify(charlist));
 
+  // Build frequency list
   const frequencyMap = buildFrequencyMap(corpus);
-  writeBytePairs(frequencyMap);
+  // Convert Map to object, then object to JSON
+  const frequencyMapString = JSON.stringify(Object.fromEntries(frequencyMap));
+  await saveFile('./output/', 'bytepairs.json', frequencyMapString);
 })();
