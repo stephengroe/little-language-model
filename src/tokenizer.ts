@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import { json } from 'stream/consumers';
 
 // Data structure for individual words for training
 export type Corpus = string[][];
@@ -85,9 +86,9 @@ async function generateCharList(corpus: Corpus): Promise<string[]> {
   return uniqueCharacterArray;
 }
 
-// Create frequency map of byte pairs
+// Create frequency map of token pairs
 function buildFrequencyMap(corpus: Corpus): Map<string, number> {
-  // Create new Map to store frequency of byte pairs
+  // Create new Map to store frequency of token pairs
   const frequencyMap = new Map<string, number>();
 
   // Iterate over all words in corpus
@@ -97,19 +98,85 @@ function buildFrequencyMap(corpus: Corpus): Map<string, number> {
       // If we're at the last character, move to the next word
       if (i+1 >= word.length) continue;
 
-      // Otherwise form byte pair from adjacent characters
-      const bytePair = `${word[i]}${word[i+1]}`;
+      // Otherwise form token pair from adjacent characters
+      const tokenPair = `${word[i]}${word[i+1]}`;
 
       // Add new entry to frequency map or increment existing
-      frequencyMap.set(bytePair, (frequencyMap.get(bytePair) ?? 0) + 1);
+      frequencyMap.set(tokenPair, (frequencyMap.get(tokenPair) ?? 0) + 1);
     }
   }
 
   return frequencyMap;
 }
 
+// Find most common adjacent token pair
+function findMostCommonPair(corpus: Corpus): string {
+  // Build frequency map from the corpus
+  const frequencyMap = buildFrequencyMap(corpus);
+
+  // Set max count and tokens
+  let maxCount = -Infinity;
+  let maxToken: string = '';
+
+  // Iterate over each token pair in the frequency map
+  for (const [token, count] of frequencyMap) {
+    // If greater than previous max, set as new max
+    if (count > maxCount) {
+      maxCount = count;
+      maxToken = token;
+    }
+  }
+
+  return maxToken;
+}
+
+// Merge token pairs in corpus
+function mergeTokenPair(corpus: Corpus, targetTokenPair: string): Corpus {
+  // Create working copy of corpus
+  let mergedCorpus = corpus.slice();
+
+  // Iterate over all words in corpus
+  for (let word of mergedCorpus) {
+    // Sliding window across all letters in each word
+    for (let i=0; i<word.length; i++) {
+      // If we're at the last character, move to the next word
+      if (i+1 >= word.length) continue;
+
+      // If token pair matches target token pair
+      if (`${word[i]}${word[i+1]}` === targetTokenPair) {
+        // Merge tokens into one
+        word = word.splice(i, 2, targetTokenPair);
+      }
+    }
+  }
+
+  return mergedCorpus;
+}
+
+// Merge all token pairs
+function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
+  // Start count of merged tokens
+  let mergedTokens = 0;
+  // Create working version of corpus
+  let mergedCorpus = corpus;
+
+  // While we still have merges left, continue
+  while (mergedTokens < vocabularySize) {
+    // Find most common pair
+    const mostCommonPair = findMostCommonPair(corpus);
+    // Merge that pair
+    mergedCorpus = mergeTokenPair(mergedCorpus, mostCommonPair);
+    // Increment merged tokens
+    mergedTokens += 1;
+    // Log progress
+    console.log(`Merged token ${mergedTokens}/${vocabularySize}: ${mostCommonPair}`);
+  }
+
+  return mergedCorpus;
+}
+
 // Run all functions
-(async () => {  
+(async () => {
   // Build corpus
   console.log(`Building corpus...`);
   const corpus: Corpus = await buildCompleteCorpus(bookTitles);
@@ -125,6 +192,12 @@ function buildFrequencyMap(corpus: Corpus): Map<string, number> {
   const frequencyMap = buildFrequencyMap(corpus);
   const frequencyMapString = JSON.stringify(Object.fromEntries(frequencyMap));
   await saveFile('./output/', 'bytepairs.json', frequencyMapString);
+
+  // Replace token pairs
+  const vocabularySize = 100;
+  console.log(`Replacing token pairs for ${vocabularySize} tokens...`)
+  const mergedCorpus = mergeAllTokenPairs(corpus, vocabularySize);
+  await saveFile('./output/', 'merged-corpus.txt', JSON.stringify(mergedCorpus));
 
   // Log success
   console.log(`Tokenization complete!`)
