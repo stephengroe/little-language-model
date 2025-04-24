@@ -131,7 +131,7 @@ function findMostCommonPair(corpus: Corpus): string {
 
 // Merge token pairs in corpus
 // NOTE: This mutates in place for performance reasons
-function mergeTokenPairInPlace(corpus: Corpus, targetTokenPair: string): Corpus {
+function mergeTokenPairInPlace(corpus: Corpus, targetTokenPair: string) {
   // Iterate over all words in corpus
   for (let w = 0; w < corpus.length; w++) {
     // Reference word directly to allow mutations
@@ -150,8 +150,6 @@ function mergeTokenPairInPlace(corpus: Corpus, targetTokenPair: string): Corpus 
       }
     }
   }
-
-  return corpus;
 }
 
 // Merge all token pairs
@@ -168,7 +166,7 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
     // Find most common pair
     const mostCommonPair = findMostCommonPair(mergedCorpus);
     // Merge that pair
-    mergedCorpus = mergeTokenPairInPlace(mergedCorpus, mostCommonPair);
+    mergeTokenPairInPlace(mergedCorpus, mostCommonPair);
     // Add to vocabulary
     vocabulary.set(mostCommonPair, mergedTokens);
     // Increment merged tokens
