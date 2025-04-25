@@ -171,8 +171,10 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
     vocabulary.set(mostCommonPair, mergedTokens);
     // Increment merged tokens
     mergedTokens += 1;
-    // Log progress
-    console.log(`Merged token ${mergedTokens}/${vocabularySize}: ${mostCommonPair}`);
+    // Log progress every 100 tokens
+    if (mergedTokens % 100 === 0) {
+      console.log(`Merged token ${mergedTokens}/${vocabularySize}`);
+    }
   }
 
   // Save vocabulary to disk
@@ -201,7 +203,7 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
   await saveFile('./output/', 'bytepairs.json', frequencyMapString);
 
   // Replace token pairs
-  const vocabularySize = 10;
+  const vocabularySize = 10_000;
   console.log(`Replacing token pairs for ${vocabularySize} tokens...`)
   console.time(`Token merging`)
   const mergedCorpus = mergeAllTokenPairs(corpus, vocabularySize);
