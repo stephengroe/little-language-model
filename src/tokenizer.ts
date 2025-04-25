@@ -38,7 +38,7 @@ async function loadFile(filePath: string, fileName: string): Promise<string> {
 // Utility function to write to disk
 async function saveFile(filePath: string, fileName: string, data: string) {
   try {
-    writeFile(`${filePath}${fileName}`, data);
+    writeFile(`${filePath}${Date.now()}-${fileName}`, data);
   } catch (err) {
     throw new Error(`Unable to save ${filePath}${fileName}: ${err}`);
   }
@@ -179,10 +179,46 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
 
   // Save vocabulary to disk
   const vocabularyString = JSON.stringify(Object.fromEntries(vocabulary));
-  (async () => await saveFile('./output/', 'vocabulary.txt', vocabularyString))();
+  (async () => await saveFile('./output/', `vocabulary.txt`, vocabularyString))();
 
   return mergedCorpus;
 }
+
+// Tokenize corpus
+function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number[] {
+  // Map over each word
+  let tokenizedCorpus: number[][] = corpus.map(word => {
+    // Map over each token
+    return word.map((token) => {
+      // Replace with token ID or -1 if not found
+      return vocabulary.get(token) ?? -1;
+    });
+  });
+  // Flatten array
+  const flattenedCorpus = tokenizedCorpus.flat(1);
+  return flattenedCorpus;
+}
+
+(async () => {
+  // Load corpus
+  const corpusData = await loadFile(`./output/`, `1745540138445-merged-corpus.txt`);
+  const corpus = JSON.parse(corpusData);
+
+  // Load vocabulary
+  const vocabularyData = await loadFile(`./output/`, `1745540138445-vocabulary.txt`);
+  const vocabulary = new Map<string, number>(Object.entries(JSON.parse(vocabularyData)));
+
+  // Tokenize corpus
+  const tokenizedCorpus = tokenizeCorpus(corpus, vocabulary);
+  console.log(`Corpus length: ${tokenizeCorpus.length}`);
+  console.log(`Unique tokens: ${new Set(tokenizedCorpus).size}`);
+
+  // Save to disk
+  await saveFile(`./output/`, `tokenized-corpus.txt`, JSON.stringify(tokenizedCorpus));
+
+})();
+
+/*
 
 // Run all functions
 (async () => {
@@ -203,13 +239,14 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
   await saveFile('./output/', 'bytepairs.json', frequencyMapString);
 
   // Replace token pairs
-  const vocabularySize = 10_000;
+  const vocabularySize = 5;
   console.log(`Replacing token pairs for ${vocabularySize} tokens...`)
   console.time(`Token merging`)
   const mergedCorpus = mergeAllTokenPairs(corpus, vocabularySize);
   console.timeEnd(`Token merging`);
-  await saveFile('./output/', 'merged-corpus.txt', JSON.stringify(mergedCorpus));
+  await saveFile('./output/', `merged-corpus.txt`, JSON.stringify(mergedCorpus));
 
   // Log success
   console.log(`Tokenization complete!`)
 })();
+*/
