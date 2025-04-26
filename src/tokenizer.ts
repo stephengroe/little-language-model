@@ -74,7 +74,7 @@ async function buildCompleteCorpus(bookTitles: string[]): Promise<Corpus> {
 }
 
 // Create list of all unique characters
-async function generateCharList(corpus: Corpus): Promise<string[]> {
+function generateCharList(corpus: Corpus): string[] {
   // Flatten array of the corpus
   const flattenedCorpus: string[] = corpus.flat(Infinity) as string[];
   // Create Set with only unique characters
@@ -154,26 +154,35 @@ function mergeTokenPairInPlace(corpus: Corpus, targetTokenPair: string) {
 
 // Merge all token pairs
 function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
-  // Start count of merged tokens
-  let mergedTokens = 0;
+  // Start count of all tokens
+  let totalTokens = 0;
   // Create working version of corpus (deep copy)
   let mergedCorpus = corpus.map(word => [...word]);
   // Create vocabulary list
   let vocabulary = new Map<string, number>();
+  
+  // Get all unique charaters in corpus
+  let uniqueCharacters: string[];
+  uniqueCharacters = generateCharList(corpus);
+  // Populate vocabulary with unique characters first
+  for (const char of uniqueCharacters) {
+    vocabulary.set(char, totalTokens);
+    totalTokens++;
+  }
 
   // While we still have merges left, continue
-  while (mergedTokens < vocabularySize) {
+  while (totalTokens < vocabularySize) {
     // Find most common pair
     const mostCommonPair = findMostCommonPair(mergedCorpus);
     // Merge that pair
     mergeTokenPairInPlace(mergedCorpus, mostCommonPair);
     // Add to vocabulary
-    vocabulary.set(mostCommonPair, mergedTokens);
+    vocabulary.set(mostCommonPair, totalTokens);
     // Increment merged tokens
-    mergedTokens += 1;
+    totalTokens += 1;
     // Log progress every 100 tokens
-    if (mergedTokens % 100 === 0) {
-      console.log(`Merged token ${mergedTokens}/${vocabularySize}`);
+    if (totalTokens % 100 === 0) {
+      console.log(`Merged token ${totalTokens}/${vocabularySize}`);
     }
   }
 
@@ -199,6 +208,7 @@ function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number
   return flattenedCorpus;
 }
 
+/*
 (async () => {
   // Load corpus
   const corpusData = await loadFile(`./output/`, `1745540138445-merged-corpus.txt`);
@@ -217,8 +227,9 @@ function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number
   await saveFile(`./output/`, `tokenized-corpus.txt`, JSON.stringify(tokenizedCorpus));
 
 })();
+*/
 
-/*
+
 
 // Run all functions
 (async () => {
@@ -239,7 +250,7 @@ function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number
   await saveFile('./output/', 'bytepairs.json', frequencyMapString);
 
   // Replace token pairs
-  const vocabularySize = 5;
+  const vocabularySize = 10_000;
   console.log(`Replacing token pairs for ${vocabularySize} tokens...`)
   console.time(`Token merging`)
   const mergedCorpus = mergeAllTokenPairs(corpus, vocabularySize);
@@ -249,4 +260,3 @@ function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number
   // Log success
   console.log(`Tokenization complete!`)
 })();
-*/

@@ -1,4 +1,4 @@
-import { readFile, writeFile, appendFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 
 // Data structure for individual words for training
 type Corpus = string[][];
