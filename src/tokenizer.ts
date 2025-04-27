@@ -1,4 +1,5 @@
 import { readFile, writeFile, mkdir } from 'fs/promises';
+import { loadFile, saveFile, formatTimestampAsISO } from './utils';
 
 // Data structure for individual words for training
 export type Corpus = string[][];
@@ -20,30 +21,6 @@ const bookTitles = [
 // Constants for tokenization boundaries
 const wordBoundaryToken = '</w>';
 const bookSeparatorToken = '<|sep|>';
-
-// Utility function to read from disk
-async function loadFile(filePath: string, fileName: string): Promise<string> {
-  let data: Buffer;
-
-  try {
-    data = await readFile(`${filePath}${fileName}`);
-  } catch (err) {
-    throw new Error(`Cannot read ${filePath}${fileName}: ${err}`);
-  }
-
-  const convertedData = data.toString();
-  return convertedData;
-}
-
-// Utility function to write to disk
-async function saveFile(filePath: string, fileName: string, data: string) {
-  const fullPath = `${filePath}${fileName}`;
-  try {
-    await writeFile(fullPath, data);
-  } catch (err) {
-    throw new Error(`Unable to save ${filePath}${fileName}: ${err}`);
-  }
-}
 
 // Build corpus from training data
 async function buildCorpus(content: string): Promise<Corpus> {
@@ -205,21 +182,6 @@ function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number
   // Remove word-level subarrays, convert to simplified list of tokens
   const flattenedCorpus = tokenizedCorpus.flat(1);
   return flattenedCorpus;
-}
-
-function formatTimestampAsISO(date: Date) {
-  const year = date.getFullYear();
-  const month = formatAsTwoDigits(date.getMonth() + 1)
-  const day = formatAsTwoDigits(date.getDate());
-  const hour = formatAsTwoDigits(date.getHours());
-  const minute = formatAsTwoDigits(date.getMinutes());
-  const second = formatAsTwoDigits(date.getSeconds());
-
-  function formatAsTwoDigits(number: number) {
-    return number.toString().padStart(2, '0');
-  }
-
-  return [year, month, day, hour, minute, second].join("");
 }
 
 // Run all functions
