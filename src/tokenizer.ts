@@ -39,7 +39,7 @@ async function loadFile(filePath: string, fileName: string): Promise<string> {
 async function saveFile(filePath: string, fileName: string, data: string) {
   const fullPath = `${filePath}${fileName}`;
   try {
-    writeFile(fullPath, data);
+    await writeFile(fullPath, data);
   } catch (err) {
     throw new Error(`Unable to save ${filePath}${fileName}: ${err}`);
   }
@@ -175,6 +175,8 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): [Corpus, Ma
   while (totalTokens < vocabularySize) {
     // Find most common pair
     const mostCommonPair = findMostCommonPair(mergedCorpus);
+    // Error handling to prevent infinite loop
+    if (!mostCommonPair) break;
     // Merge that pair
     mergeTokenPairInPlace(mergedCorpus, mostCommonPair);
     // Add to vocabulary
@@ -200,7 +202,7 @@ function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number
       return vocabulary.get(token) ?? -1;
     });
   });
-  // Flatten array
+  // Remove word-level subarrays, convert to simplified list of tokens
   const flattenedCorpus = tokenizedCorpus.flat(1);
   return flattenedCorpus;
 }
@@ -227,7 +229,7 @@ function formatTimestampAsISO(date: Date) {
 
   // Create new folder to save all output
   try {
-    mkdir(`./output/${timestamp}`);
+    await mkdir(`./output/${timestamp}`);
   } catch (err) {
     console.error(`Unable to create directory ${timestamp}: ${err}`);
   }
@@ -244,11 +246,12 @@ function formatTimestampAsISO(date: Date) {
   const [mergedCorpus, vocabulary] = mergeAllTokenPairs(corpus, vocabularySize);
   console.timeEnd(`Token merging`);
   await saveFile(`./output/${timestamp}/`, `corpus-merged.txt`, JSON.stringify(mergedCorpus));
-
+  await saveFile(`./output/${timestamp}/`, `vocabulary.json`, JSON.stringify(vocabulary));
+  
   // Tokenize corpus
   console.log(`Tokenizing corpus...`);
-  const tokenizedCorpus = tokenizeCorpus(corpus, vocabulary);
-  await saveFile(`./output/${timestamp}/`, `corpus-tokenized.txt`, JSON.stringify(tokenizedCorpus));
+  const tokenizedCorpus = tokenizeCorpus(mergedCorpus, vocabulary);
+  await saveFile(`./output/${timestamp}/`, `corpus-tokenized.json`, JSON.stringify(tokenizedCorpus));
 
   // Log success
   console.log(`Tokenization complete!`);
