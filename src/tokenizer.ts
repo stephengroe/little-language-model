@@ -1,11 +1,10 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
-import { loadFile, saveFile, formatTimestampAsISO } from './utils';
+import { loadFile } from './utils';
 
 // Data structure for individual words for training
 export type Corpus = string[][];
 
 // List of Dickens books for source data
-const bookTitles = [
+export const bookTitles = [
   'a-christmas-carol',
   'american-notes',
   'bleak-house',
@@ -34,7 +33,7 @@ async function buildCorpus(content: string): Promise<Corpus> {
 }
 
 // Compile entire corpus
-async function buildCompleteCorpus(bookTitles: string[]): Promise<Corpus> {
+export async function buildCompleteCorpus(bookTitles: string[]): Promise<Corpus> {
     // Define corpus array
     let corpus: Corpus = [];
 
@@ -131,7 +130,7 @@ function mergeTokenPairInPlace(corpus: Corpus, targetTokenPair: string) {
 }
 
 // Merge all token pairs
-function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): [Corpus, Map<string, number>] {
+export function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): [Corpus, Map<string, number>] {
   // Start count of all tokens
   let totalTokens = 0;
   // Create working version of corpus (deep copy)
@@ -170,7 +169,7 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): [Corpus, Ma
 }
 
 // Tokenize corpus
-function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number[] {
+export function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number[] {
   // Map over each word
   let tokenizedCorpus: number[][] = corpus.map(word => {
     // Map over each token
@@ -183,38 +182,3 @@ function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number
   const flattenedCorpus = tokenizedCorpus.flat(1);
   return flattenedCorpus;
 }
-
-// Run all functions
-(async () => {
-  // Create timestamp to save output
-  const timestamp = formatTimestampAsISO(new Date());
-
-  // Create new folder to save all output
-  try {
-    await mkdir(`./output/${timestamp}`);
-  } catch (err) {
-    console.error(`Unable to create directory ${timestamp}: ${err}`);
-  }
-  
-  // Build corpus
-  console.log(`Building corpus...`);
-  const corpus: Corpus = await buildCompleteCorpus(bookTitles);
-  await saveFile(`./output/${timestamp}/`, 'corpus-raw.txt', JSON.stringify(corpus));
-
-  // Build list of tokens
-  const vocabularySize = 5;
-  console.log(`Replacing token pairs for ${vocabularySize} tokens...`)
-  console.time(`Token merging`)
-  const [mergedCorpus, vocabulary] = mergeAllTokenPairs(corpus, vocabularySize);
-  console.timeEnd(`Token merging`);
-  await saveFile(`./output/${timestamp}/`, `corpus-merged.txt`, JSON.stringify(mergedCorpus));
-  await saveFile(`./output/${timestamp}/`, `vocabulary.json`, JSON.stringify(vocabulary));
-  
-  // Tokenize corpus
-  console.log(`Tokenizing corpus...`);
-  const tokenizedCorpus = tokenizeCorpus(mergedCorpus, vocabulary);
-  await saveFile(`./output/${timestamp}/`, `corpus-tokenized.json`, JSON.stringify(tokenizedCorpus));
-
-  // Log success
-  console.log(`Tokenization complete!`);
-})();
