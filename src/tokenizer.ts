@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 
 // Data structure for individual words for training
 export type Corpus = string[][];
@@ -37,8 +37,9 @@ async function loadFile(filePath: string, fileName: string): Promise<string> {
 
 // Utility function to write to disk
 async function saveFile(filePath: string, fileName: string, data: string) {
+  const fullPath = `${filePath}${fileName}`;
   try {
-    writeFile(`${filePath}${Date.now()}-${fileName}`, data);
+    writeFile(fullPath, data);
   } catch (err) {
     throw new Error(`Unable to save ${filePath}${fileName}: ${err}`);
   }
@@ -153,7 +154,7 @@ function mergeTokenPairInPlace(corpus: Corpus, targetTokenPair: string) {
 }
 
 // Merge all token pairs
-function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
+function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): [Corpus, Map<string, number>] {
   // Start count of all tokens
   let totalTokens = 0;
   // Create working version of corpus (deep copy)
@@ -186,11 +187,7 @@ function mergeAllTokenPairs(corpus: Corpus, vocabularySize: number): Corpus {
     }
   }
 
-  // Save vocabulary to disk
-  const vocabularyString = JSON.stringify(Object.fromEntries(vocabulary));
-  (async () => await saveFile('./output/', `vocabulary.txt`, vocabularyString))();
-
-  return mergedCorpus;
+  return [mergedCorpus, vocabulary];
 }
 
 // Tokenize corpus
@@ -208,55 +205,51 @@ function tokenizeCorpus(corpus: Corpus, vocabulary: Map<string, number>): number
   return flattenedCorpus;
 }
 
-/*
-(async () => {
-  // Load corpus
-  const corpusData = await loadFile(`./output/`, `1745540138445-merged-corpus.txt`);
-  const corpus = JSON.parse(corpusData);
+function formatTimestampAsISO(date: Date) {
+  const year = date.getFullYear();
+  const month = formatAsTwoDigits(date.getMonth() + 1)
+  const day = formatAsTwoDigits(date.getDate());
+  const hour = formatAsTwoDigits(date.getHours());
+  const minute = formatAsTwoDigits(date.getMinutes());
+  const second = formatAsTwoDigits(date.getSeconds());
 
-  // Load vocabulary
-  const vocabularyData = await loadFile(`./output/`, `1745540138445-vocabulary.txt`);
-  const vocabulary = new Map<string, number>(Object.entries(JSON.parse(vocabularyData)));
+  function formatAsTwoDigits(number: number) {
+    return number.toString().padStart(2, '0');
+  }
 
-  // Tokenize corpus
-  const tokenizedCorpus = tokenizeCorpus(corpus, vocabulary);
-  console.log(`Corpus length: ${tokenizeCorpus.length}`);
-  console.log(`Unique tokens: ${new Set(tokenizedCorpus).size}`);
-
-  // Save to disk
-  await saveFile(`./output/`, `tokenized-corpus.txt`, JSON.stringify(tokenizedCorpus));
-
-})();
-*/
-
-
+  return [year, month, day, hour, minute, second].join("");
+}
 
 // Run all functions
 (async () => {
+  // Create timestamp to save output
+  const timestamp = formatTimestampAsISO(new Date());
+
+  // Create new folder to save all output
+  try {
+    mkdir(`./output/${timestamp}`);
+  } catch (err) {
+    console.error(`Unable to create directory ${timestamp}: ${err}`);
+  }
+  
   // Build corpus
   console.log(`Building corpus...`);
   const corpus: Corpus = await buildCompleteCorpus(bookTitles);
-  await saveFile('./output/', 'corpus.txt', JSON.stringify(corpus));
-  
-  // Build character list
-  console.log(`Building character list...`);
-  const charlist = await generateCharList(corpus);
-  await saveFile('./output/', 'charlist.txt', JSON.stringify(charlist));
+  await saveFile(`./output/${timestamp}/`, 'corpus-raw.txt', JSON.stringify(corpus));
 
-  // Build frequency map
-  console.log(`Building frequency map...`);
-  const frequencyMap = buildFrequencyMap(corpus);
-  const frequencyMapString = JSON.stringify(Object.fromEntries(frequencyMap));
-  await saveFile('./output/', 'bytepairs.json', frequencyMapString);
-
-  // Replace token pairs
-  const vocabularySize = 10_000;
+  // Build list of tokens
+  const vocabularySize = 5;
   console.log(`Replacing token pairs for ${vocabularySize} tokens...`)
   console.time(`Token merging`)
-  const mergedCorpus = mergeAllTokenPairs(corpus, vocabularySize);
+  const [mergedCorpus, vocabulary] = mergeAllTokenPairs(corpus, vocabularySize);
   console.timeEnd(`Token merging`);
-  await saveFile('./output/', `merged-corpus.txt`, JSON.stringify(mergedCorpus));
+  await saveFile(`./output/${timestamp}/`, `corpus-merged.txt`, JSON.stringify(mergedCorpus));
+
+  // Tokenize corpus
+  console.log(`Tokenizing corpus...`);
+  const tokenizedCorpus = tokenizeCorpus(corpus, vocabulary);
+  await saveFile(`./output/${timestamp}/`, `corpus-tokenized.txt`, JSON.stringify(tokenizedCorpus));
 
   // Log success
-  console.log(`Tokenization complete!`)
+  console.log(`Tokenization complete!`);
 })();
