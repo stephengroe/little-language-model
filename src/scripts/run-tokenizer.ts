@@ -3,7 +3,7 @@ import { saveFile, formatTimestampAsISO } from '../utils';
 import { bookTitles, Corpus, buildCompleteCorpus, mergeAllTokenPairs, tokenizeCorpus } from '../tokenizer';
 
 // Run all functions
-(async () => {
+async function main() {
   // Create timestamp to save output
   const timestamp = formatTimestampAsISO(new Date());
 
@@ -35,4 +35,6 @@ import { bookTitles, Corpus, buildCompleteCorpus, mergeAllTokenPairs, tokenizeCo
 
   // Log success
   console.log(`Tokenization complete!`);
-})();
+}
+
+main();
