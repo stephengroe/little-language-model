@@ -32,7 +32,7 @@ async function main() {
   } catch (err) {
     console.error(`Unable to create directory ${timestamp}: ${err}`);
   }
-  
+
   // Build corpus
   console.log(`Creating corpus...`);
   const corpus = new Corpus();
@@ -48,37 +48,63 @@ async function main() {
   }
 
   // Save raw corpus
-  await saveFile(`./output/${timestamp}/`, 'corpus-raw.txt', JSON.stringify(corpus.getTexts()));
+  await saveFile(
+    `./output/${timestamp}/`,
+    'corpus-raw.txt',
+    JSON.stringify(corpus.getTexts())
+  );
 
   // Build vocabulary
   console.log(`Building vocabulary...`);
   const vocab = new Vocabulary();
   vocab.buildFromCorpus(corpus.getTexts());
-  await saveFile(`./output/${timestamp}/`, `vocabulary.json`, JSON.stringify(Object.fromEntries(vocab.getVocab())));
-  
+  await saveFile(
+    `./output/${timestamp}/`,
+    `vocabulary.json`,
+    JSON.stringify(Object.fromEntries(vocab.getVocab()))
+  );
+
   // Build list of tokens
   console.log(`Building tokenizer...`);
   const tokenizer = new Tokenizer(corpus.getTexts(), vocab.getVocab());
-  
+
   console.log(`Replacing token pairs for ${vocabularySize} tokens...`);
   console.time(`Token merging`);
 
   tokenizer.mergeAllTokenPairs(vocabularySize);
   console.timeEnd(`Token merging`);
-  await saveFile(`./output/${timestamp}/`, `corpus-merged.txt`, JSON.stringify(tokenizer.getMergedText()));
-  await saveFile(`./output/${timestamp}/`, `vocabulary-merged.json`, JSON.stringify(Object.fromEntries(tokenizer.getVocabulary())));
-  
+  await saveFile(
+    `./output/${timestamp}/`,
+    `corpus-merged.txt`,
+    JSON.stringify(tokenizer.getMergedText())
+  );
+  await saveFile(
+    `./output/${timestamp}/`,
+    `vocabulary-merged.json`,
+    JSON.stringify(Object.fromEntries(tokenizer.getVocabulary()))
+  );
+
   // Tokenize corpus
   console.log(`Tokenizing corpus...`);
-  const tokenizedCorpus = tokenizeCorpus(tokenizer.getMergedText(), tokenizer.getVocabulary());
-  await saveFile(`./output/${timestamp}/`, `corpus-tokenized.json`, JSON.stringify(tokenizedCorpus));
+  const tokenizedCorpus = tokenizeCorpus(
+    tokenizer.getMergedText(),
+    tokenizer.getVocabulary()
+  );
+  await saveFile(
+    `./output/${timestamp}/`,
+    `corpus-tokenized.json`,
+    JSON.stringify(tokenizedCorpus)
+  );
 
   // Log success
   console.log(`Tokenization complete!`);
 }
 
 // Tokenize corpus
-export function tokenizeCorpus(corpus: CorpusTexts, vocabulary: Map<string, number>): number[] {
+export function tokenizeCorpus(
+  corpus: CorpusTexts,
+  vocabulary: Map<string, number>
+): number[] {
   // Map over each word
   let tokenizedCorpus: number[][] = corpus.map((word: string[]) => {
     // Map over each token

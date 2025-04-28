@@ -1,4 +1,4 @@
-import { CorpusTexts } from "./Corpus";
+import { CorpusTexts } from './Corpus';
 
 export type Vocab = Map<string, number>;
 

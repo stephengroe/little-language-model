@@ -1,7 +1,10 @@
-import { readFile, writeFile } from "fs/promises";
+import { readFile, writeFile } from 'fs/promises';
 
 // Utility function to read from disk
-export async function loadFile(filePath: string, fileName: string): Promise<string> {
+export async function loadFile(
+  filePath: string,
+  fileName: string
+): Promise<string> {
   let data: Buffer;
 
   try {
@@ -15,7 +18,11 @@ export async function loadFile(filePath: string, fileName: string): Promise<stri
 }
 
 // Utility function to write to disk
-export async function saveFile(filePath: string, fileName: string, data: string) {
+export async function saveFile(
+  filePath: string,
+  fileName: string,
+  data: string
+) {
   const fullPath = `${filePath}${fileName}`;
   try {
     await writeFile(fullPath, data);
@@ -27,7 +34,7 @@ export async function saveFile(filePath: string, fileName: string, data: string)
 // Format timestamps
 export function formatTimestampAsISO(date: Date) {
   const year = date.getFullYear();
-  const month = formatAsTwoDigits(date.getMonth() + 1)
+  const month = formatAsTwoDigits(date.getMonth() + 1);
   const day = formatAsTwoDigits(date.getDate());
   const hour = formatAsTwoDigits(date.getHours());
   const minute = formatAsTwoDigits(date.getMinutes());
@@ -37,5 +44,5 @@ export function formatTimestampAsISO(date: Date) {
     return number.toString().padStart(2, '0');
   }
 
-  return [year, month, day, hour, minute, second].join("");
+  return [year, month, day, hour, minute, second].join('');
 }

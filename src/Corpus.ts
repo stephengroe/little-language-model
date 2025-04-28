@@ -12,13 +12,16 @@ export class Corpus {
   constructor() {
     this.texts = [];
   }
-  
+
   // Build corpus from training data
   addText(content: string): void {
     // Divide into words
     const contentWords = content.split(/\s+/);
     // Divide into characters with word boundary at the end
-    const wordList = contentWords.map(word => [...word.split(''), wordBoundaryToken]);
+    const wordList = contentWords.map((word) => [
+      ...word.split(''),
+      wordBoundaryToken,
+    ]);
     // Add to texts
     this.texts.push(...wordList);
     // Add text separator

@@ -7,7 +7,7 @@
     "train": "tsx src/train.js",
     "generate": "tsx src/generate.ts",
     "clean": "rm -rf dist",
-    "format": "prettier --write"
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",

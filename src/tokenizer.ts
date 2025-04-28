@@ -1,5 +1,5 @@
-import { CorpusTexts } from "./Corpus";
-import { Vocab } from "./Vocabulary";
+import { CorpusTexts } from './Corpus';
+import { Vocab } from './Vocabulary';
 
 export class Tokenizer {
   // Set up corpus and vocabulary
@@ -19,12 +19,12 @@ export class Tokenizer {
       // Reference word directly to allow mutations
       let word = this.texts[w];
       // Sliding window across all letters in each word
-      for (let i=0; i<word.length; i++) {
+      for (let i = 0; i < word.length; i++) {
         // If we're at the last character, move to the next word
-        if (i+1 >= word.length) continue;
+        if (i + 1 >= word.length) continue;
 
         // If token pair matches target token pair
-        if (`${word[i]}${word[i+1]}` === targetTokenPair) {
+        if (`${word[i]}${word[i + 1]}` === targetTokenPair) {
           // Merge tokens into one
           word.splice(i, 2, targetTokenPair);
           // Skip the merged token
@@ -66,12 +66,12 @@ export class Tokenizer {
     // Iterate over all words in corpus
     for (const word of this.texts) {
       // Sliding window across all letters in each word
-      for (let i=0; i<word.length; i++) {
+      for (let i = 0; i < word.length; i++) {
         // If we're at the last character, move to the next word
-        if (i+1 >= word.length) continue;
+        if (i + 1 >= word.length) continue;
 
         // Otherwise form token pair from adjacent characters
-        const tokenPair = `${word[i]}${word[i+1]}`;
+        const tokenPair = `${word[i]}${word[i + 1]}`;
 
         // Add new entry to frequency map or increment existing
         frequencyMap.set(tokenPair, (frequencyMap.get(tokenPair) ?? 0) + 1);
