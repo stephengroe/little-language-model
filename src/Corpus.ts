@@ -15,6 +15,10 @@ export class Corpus {
 
   // Build corpus from training data
   addText(content: string): void {
+    // Throw error if passed an empty string
+    if (!content.trim()) {
+      throw new Error('Content for corpus cannot be an empty string');
+    }
     // Divide into words
     const contentWords = content.split(/\s+/);
     // Divide into characters with word boundary at the end
