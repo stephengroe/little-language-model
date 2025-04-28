@@ -1,8 +1,8 @@
 import { mkdir } from 'fs/promises';
-import { saveFile, loadFile, formatTimestampAsISO } from '../utils';
-import { CorpusTexts, Corpus } from '../Corpus';
-import { Vocabulary } from '../Vocabulary';
-import { Tokenizer } from '../tokenizer';
+import { saveFile, loadFile, formatTimestampAsISO } from './utils';
+import { CorpusTexts, Corpus } from './Corpus';
+import { Vocabulary } from './Vocabulary';
+import { Tokenizer } from './Tokenizer';
 
 // List of Dickens books for source data
 export const bookTitles = [
