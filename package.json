@@ -6,13 +6,15 @@
     "build": "tsc",
     "train": "tsx src/train.js",
     "generate": "tsx src/generate.ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "format": "prettier --write"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.14.1",
+    "prettier": "^3.5.3",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
   }
