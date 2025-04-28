@@ -3,34 +3,19 @@ import { saveFile, loadFile, formatTimestampAsISO } from './utils';
 import { CorpusTexts, Corpus } from './Corpus';
 import { Vocabulary } from './Vocabulary';
 import { Tokenizer } from './Tokenizer';
-
-// List of Dickens books for source data
-export const bookTitles = [
-  'a-christmas-carol',
-  // 'american-notes',
-  // 'bleak-house',
-  // 'david-copperfield',
-  // 'hard-times',
-  // 'little-dorrit',
-  // 'nicholas-nickleby',
-  // 'our-mutual-friend',
-  // 'the-old-curiosity-shop',
-  // 'the-pickwick-papers',
-];
-
-// Set vocabulary size
-const vocabularySize = 1_000;
+import { tokenizerConfig } from './config';
 
 // Run all functions
 async function main() {
   // Create timestamp to save output
-  const timestamp = `DELETE-ME-${formatTimestampAsISO(new Date())}`;
+  const timestamp = `${formatTimestampAsISO(new Date())}`;
+  const filePath = `${tokenizerConfig.outputFolder}-${timestamp}/`;
 
   // Create new folder to save all output
   try {
-    await mkdir(`./output/${timestamp}`);
+    await mkdir(filePath);
   } catch (err) {
-    console.error(`Unable to create directory ${timestamp}: ${err}`);
+    console.error(`Unable to create directory ${filePath}: ${err}`);
   }
 
   // Build corpus
@@ -38,18 +23,21 @@ async function main() {
   const corpus = new Corpus();
 
   // Add books to corpus
-  for (const bookTitle of bookTitles) {
+  for (const bookTitle of tokenizerConfig.inputTexts) {
     // Log
     console.log(`Adding ${bookTitle}...`);
     // Load book file
-    const content = await loadFile('./data/dickens/', `${bookTitle}.txt`);
+    const content = await loadFile(
+      tokenizerConfig.inputTextDirectory,
+      `${bookTitle}.txt`
+    );
     // Build corpus from document
     corpus.addText(content);
   }
 
   // Save raw corpus
   await saveFile(
-    `./output/${timestamp}/`,
+    filePath,
     'corpus-raw.txt',
     JSON.stringify(corpus.getTexts())
   );
@@ -59,7 +47,7 @@ async function main() {
   const vocab = new Vocabulary();
   vocab.buildFromCorpus(corpus.getTexts());
   await saveFile(
-    `./output/${timestamp}/`,
+    filePath,
     `vocabulary.json`,
     JSON.stringify(Object.fromEntries(vocab.getVocab()))
   );
@@ -68,18 +56,20 @@ async function main() {
   console.log(`Building tokenizer...`);
   const tokenizer = new Tokenizer(corpus.getTexts(), vocab.getVocab());
 
-  console.log(`Replacing token pairs for ${vocabularySize} tokens...`);
+  console.log(
+    `Replacing token pairs for ${tokenizerConfig.vocabularySize} tokens...`
+  );
   console.time(`Token merging`);
 
-  tokenizer.mergeAllTokenPairs(vocabularySize);
+  tokenizer.mergeAllTokenPairs(tokenizerConfig.vocabularySize);
   console.timeEnd(`Token merging`);
   await saveFile(
-    `./output/${timestamp}/`,
+    filePath,
     `corpus-merged.txt`,
     JSON.stringify(tokenizer.getMergedText())
   );
   await saveFile(
-    `./output/${timestamp}/`,
+    filePath,
     `vocabulary-merged.json`,
     JSON.stringify(Object.fromEntries(tokenizer.getVocabulary()))
   );
@@ -91,7 +81,7 @@ async function main() {
     tokenizer.getVocabulary()
   );
   await saveFile(
-    `./output/${timestamp}/`,
+    filePath,
     `corpus-tokenized.json`,
     JSON.stringify(tokenizedCorpus)
   );
