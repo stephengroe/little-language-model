@@ -17,25 +17,32 @@ export class Tokenizer {
     this.pairIndex = new Map<string, Set<number>>();
     this.frequencyMap = new Map<string, number>();
 
+    console.log(`Indexing byte pairs...`);
     this.buildPairMapAndIndex();
   }
 
   // Merge token pairs in corpus
-  // NOTE: This mutates in place for performance reasons
-  mergeTokenPairInPlace(targetTokenPair: string) {
-    // Iterate over all words in corpus
-    for (let w = 0; w < this.texts.length; w++) {
-      // Reference word directly to allow mutations
-      let word = this.texts[w];
+  mergeTokenPair(targetTokenPair: string) {
+    // Get positions of all words with target token pair
+    const targetWordIndexes = this.pairIndex.get(targetTokenPair);
+
+    // Return if undefined or no indexed words
+    if (!targetWordIndexes || targetWordIndexes.size === 0) return;
+
+    // Iterate over target words
+    for (const targetWordIndex of targetWordIndexes) {
+      // Isolate word in corpus
+      let targetWord = this.texts[targetWordIndex];
+
       // Sliding window across all letters in each word
-      for (let i = 0; i < word.length; i++) {
-        // If we're at the last character, move to the next word
-        if (i + 1 >= word.length) continue;
+      for (let i = 0; i < targetWord.length; i++) {
+        // If we're at the last character, move to next word
+        if (i + 1 >= targetWord.length) continue;
 
         // If token pair matches target token pair
-        if (`${word[i]}${word[i + 1]}` === targetTokenPair) {
+        if (`${targetWord[i]}${targetWord[i + 1]}` === targetTokenPair) {
           // Merge tokens into one
-          word.splice(i, 2, targetTokenPair);
+          targetWord.splice(i, 2, targetTokenPair);
           // Skip the merged token
           i += 1;
         }
@@ -55,9 +62,11 @@ export class Tokenizer {
       // Error handling to prevent infinite loop
       if (!mostCommonPair) break;
       // Merge that pair
-      this.mergeTokenPairInPlace(mostCommonPair);
+      this.mergeTokenPair(mostCommonPair);
       // Add to vocabulary
       this.vocab.set(mostCommonPair, totalTokens);
+      // Remove from frequency map
+      this.frequencyMap.delete(mostCommonPair);
       // Increment merged tokens
       totalTokens += 1;
       // Log progress every 100 tokens
