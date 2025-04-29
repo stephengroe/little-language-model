@@ -1,12 +1,12 @@
 import { Corpus } from '../Corpus';
 
 describe('Corpus module', () => {
-  it('initializes with empty array', () => {
+  test('initializes with empty array', () => {
     const corpus = new Corpus();
     expect(corpus.getTexts()).toEqual([]);
   });
 
-  it('accepts and splits single text correctly', () => {
+  test('accepts and splits single text', () => {
     const corpus = new Corpus();
     corpus.addText('hello world');
     expect(corpus.getTexts()).toEqual([
@@ -16,7 +16,7 @@ describe('Corpus module', () => {
     ]);
   });
 
-  it('accepts and splits multiple texts correctly with separator tokens', () => {
+  test('accepts and splits multiple texts with separator tokens', () => {
     const corpus = new Corpus();
     corpus.addText('hello world');
     corpus.addText('goodbye');

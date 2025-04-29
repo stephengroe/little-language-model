@@ -1,7 +1,7 @@
 import { Vocabulary } from '../Vocabulary';
 
 describe('Vocabulary module', () => {
-  it('initializes with empty Map', () => {
+  test('initializes with empty Map', () => {
     const vocab = new Vocabulary();
     expect(vocab.getVocab()).toBeInstanceOf(Map);
     expect(vocab.getVocab().size).toBe(0);
