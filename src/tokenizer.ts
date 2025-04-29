@@ -2,13 +2,22 @@ import { CorpusTexts } from './Corpus';
 import { Vocab } from './Vocabulary';
 
 export class Tokenizer {
-  // Set up corpus and vocabulary
+  // Set up corpus for merging
   private texts: CorpusTexts;
+  // Set up vocabulary
   private vocab: Vocab;
+  // Set up index (to store locations of pairs for merging)
+  private pairIndex: Map<string, Set<number>>;
+  // Set up frequency map
+  private frequencyMap: Map<string, number>;
 
   constructor(texts: CorpusTexts, vocab: Vocab) {
     this.texts = JSON.parse(JSON.stringify(texts));
     this.vocab = new Map<string, number>(vocab);
+    this.pairIndex = new Map<string, Set<number>>();
+    this.frequencyMap = new Map<string, number>();
+
+    this.buildPairMapAndIndex();
   }
 
   // Merge token pairs in corpus
@@ -59,12 +68,9 @@ export class Tokenizer {
   }
 
   // Create frequency map of token pairs
-  buildFrequencyMap(): Map<string, number> {
-    // Create new Map to store frequency of token pairs
-    const frequencyMap = new Map<string, number>();
-
+  buildPairMapAndIndex() {
     // Iterate over all words in corpus
-    for (const word of this.texts) {
+    for (const [index, word] of this.texts.entries()) {
       // Sliding window across all letters in each word
       for (let i = 0; i < word.length; i++) {
         // If we're at the last character, move to the next word
@@ -73,25 +79,30 @@ export class Tokenizer {
         // Otherwise form token pair from adjacent characters
         const tokenPair = `${word[i]}${word[i + 1]}`;
 
-        // Add new entry to frequency map or increment existing
-        frequencyMap.set(tokenPair, (frequencyMap.get(tokenPair) ?? 0) + 1);
+        // Add to frequency map
+        this.frequencyMap.set(
+          tokenPair,
+          (this.frequencyMap.get(tokenPair) ?? 0) + 1
+        );
+
+        // Add to index
+        if (this.pairIndex.has(tokenPair)) {
+          this.pairIndex.get(tokenPair)!.add(index);
+        } else {
+          this.pairIndex.set(tokenPair, new Set<number>([index]));
+        }
       }
     }
-
-    return frequencyMap;
   }
 
   // Find most common adjacent token pair
   findMostCommonPair(corpus: CorpusTexts): string {
-    // Build frequency map from the corpus
-    const frequencyMap = this.buildFrequencyMap();
-
     // Set max count and tokens
     let maxCount = -Infinity;
     let maxToken: string = '';
 
     // Iterate over each token pair in the frequency map
-    for (const [token, count] of frequencyMap) {
+    for (const [token, count] of this.frequencyMap) {
       // If greater than previous max, set as new max
       if (count > maxCount) {
         maxCount = count;
