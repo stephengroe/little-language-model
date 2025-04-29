@@ -43,6 +43,9 @@ export class Tokenizer {
         if (`${targetWord[i]}${targetWord[i + 1]}` === targetTokenPair) {
           // Merge tokens into one
           targetWord.splice(i, 2, targetTokenPair);
+          // Decrement count of token in frequencyMap
+          const frequency = this.frequencyMap.get(targetTokenPair) || 1;
+          this.frequencyMap.set(targetTokenPair, frequency - 1);
           // Skip the merged token
           i += 1;
         }
@@ -65,8 +68,6 @@ export class Tokenizer {
       this.mergeTokenPair(mostCommonPair);
       // Add to vocabulary
       this.vocab.set(mostCommonPair, totalTokens);
-      // Remove from frequency map
-      this.frequencyMap.delete(mostCommonPair);
       // Increment merged tokens
       totalTokens += 1;
       // Log progress every 100 tokens
