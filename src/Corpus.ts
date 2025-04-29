@@ -21,13 +21,17 @@ export class Corpus {
     }
     // Divide into words
     const contentWords = content.split(/\s+/);
-    // Divide into characters with word boundary at the end
-    const wordList = contentWords.map((word) => [
-      ...word.split(''),
-      wordBoundaryToken,
-    ]);
-    // Add to texts
-    this.texts.push(...wordList);
+
+    // Iterate over each word
+    for (const word of contentWords) {
+      // Split word into characters
+      const splitWord = word.split('');
+      // Add end of word token
+      splitWord.push(wordBoundaryToken);
+      // Add to text
+      this.texts.push(splitWord);
+    }
+
     // Add text separator
     this.texts.push([textSeparatorToken]);
   }
