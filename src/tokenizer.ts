@@ -17,8 +17,53 @@ export class Tokenizer {
     this.pairIndex = new Map<string, Set<number>>();
     this.frequencyMap = new Map<string, number>();
 
-    console.log(`Indexing byte pairs...`);
-    this.buildPairMapAndIndex();
+    console.log(`Indexing token pairs...`);
+    this.indexAllWordTokens();
+  }
+
+  // Merge token pairs in a single word
+  mergeWordTokenPair(targetTokenPair: string, targetWordIndex: number) {
+    // Isolate word in corpus
+    let targetWord = this.texts[targetWordIndex];
+    // Store positions of future merges
+    let mergeIndexes: number[] = [];
+
+    // Sliding window across all token pairs
+    for (let i = 0; i < targetWord.length; i++) {
+      // If we're at the last character
+      if (i + 1 >= targetWord.length) continue;
+      // Isolate and name the current pair
+      const currentTokenPair = `${targetWord[i]}${targetWord[i + 1]}`;
+
+      // Decrement from frequency map (we'll add later if relevant)
+      const frequency = this.frequencyMap.get(currentTokenPair) || 1;
+      if (frequency === 1) {
+        // If last entry in frequency map, delete entry
+        this.frequencyMap.delete(currentTokenPair);
+      } else {
+        this.frequencyMap.set(currentTokenPair, frequency - 1);
+      }
+
+      // Remove word from index (we'll add later if relevant)
+      this.pairIndex.get(targetTokenPair)?.delete(targetWordIndex);
+
+      // If we've found a pair to merge
+      if (currentTokenPair === targetTokenPair) {
+        // Save in list of indexes
+        mergeIndexes.push(i);
+      }
+    }
+
+    // Perform merges
+    let mergeOffset = 0; // Adjust index for words with multiple merges
+    for (const mergeIndex of mergeIndexes) {
+      // Merge tokens into one
+      targetWord.splice(mergeIndex + mergeOffset, 2, targetTokenPair);
+      mergeOffset += 1;
+    }
+
+    // Recompute the tokens in this word
+    this.indexWordTokens(targetWordIndex);
   }
 
   // Merge token pairs in corpus
@@ -31,25 +76,7 @@ export class Tokenizer {
 
     // Iterate over target words
     for (const targetWordIndex of targetWordIndexes) {
-      // Isolate word in corpus
-      let targetWord = this.texts[targetWordIndex];
-
-      // Sliding window across all letters in each word
-      for (let i = 0; i < targetWord.length; i++) {
-        // If we're at the last character, move to next word
-        if (i + 1 >= targetWord.length) continue;
-
-        // If token pair matches target token pair
-        if (`${targetWord[i]}${targetWord[i + 1]}` === targetTokenPair) {
-          // Merge tokens into one
-          targetWord.splice(i, 2, targetTokenPair);
-          // Decrement count of token in frequencyMap
-          const frequency = this.frequencyMap.get(targetTokenPair) || 1;
-          this.frequencyMap.set(targetTokenPair, frequency - 1);
-          // Skip the merged token
-          i += 1;
-        }
-      }
+      this.mergeWordTokenPair(targetTokenPair, targetWordIndex);
     }
   }
 
@@ -61,7 +88,7 @@ export class Tokenizer {
     // While we still have merges left, continue
     while (totalTokens < vocabularySize) {
       // Find most common pair
-      const mostCommonPair = this.findMostCommonPair(this.texts);
+      const mostCommonPair = this.findMostCommonTokenPair();
       // Error handling to prevent infinite loop
       if (!mostCommonPair) break;
       // Merge that pair
@@ -77,50 +104,59 @@ export class Tokenizer {
     }
   }
 
-  // Create frequency map of token pairs
-  buildPairMapAndIndex() {
-    // Iterate over all words in corpus
-    for (const [index, word] of this.texts.entries()) {
-      // Sliding window across all letters in each word
-      for (let i = 0; i < word.length; i++) {
-        // If we're at the last character, move to the next word
-        if (i + 1 >= word.length) continue;
+  // Index tokens from a single word
+  indexWordTokens(wordIndex: number) {
+    // Get the word from the corpus
+    const word = this.texts[wordIndex];
 
-        // Otherwise form token pair from adjacent characters
-        const tokenPair = `${word[i]}${word[i + 1]}`;
+    // Iterate over each token in the word
+    for (let i = 0; i < word.length; i++) {
+      // If we're at the last character, return
+      if (i + 1 >= word.length) return;
 
-        // Add to frequency map
-        this.frequencyMap.set(
-          tokenPair,
-          (this.frequencyMap.get(tokenPair) ?? 0) + 1
-        );
+      // Otherwise form token pair from adjacent characters
+      const tokenPair = `${word[i]}${word[i + 1]}`;
 
-        // Add to index
-        if (this.pairIndex.has(tokenPair)) {
-          this.pairIndex.get(tokenPair)!.add(index);
-        } else {
-          this.pairIndex.set(tokenPair, new Set<number>([index]));
-        }
+      // Add to frequency map
+      this.frequencyMap.set(
+        tokenPair,
+        (this.frequencyMap.get(tokenPair) ?? 0) + 1
+      );
+
+      // Add to index
+      if (this.pairIndex.has(tokenPair)) {
+        this.pairIndex.get(tokenPair)!.add(wordIndex);
+      } else {
+        this.pairIndex.set(tokenPair, new Set<number>([wordIndex]));
       }
     }
   }
 
+  // Index tokens from all words
+  indexAllWordTokens() {
+    // Iterate over all words in corpus
+    for (let i = 0; i < this.texts.length; i++) {
+      // Index tokens for that word
+      this.indexWordTokens(i);
+    }
+  }
+
   // Find most common adjacent token pair
-  findMostCommonPair(corpus: CorpusTexts): string {
+  findMostCommonTokenPair(): string {
     // Set max count and tokens
     let maxCount = -Infinity;
-    let maxToken: string = '';
+    let mostCommonToken: string = '';
 
     // Iterate over each token pair in the frequency map
     for (const [token, count] of this.frequencyMap) {
       // If greater than previous max, set as new max
       if (count > maxCount) {
         maxCount = count;
-        maxToken = token;
+        mostCommonToken = token;
       }
     }
 
-    return maxToken;
+    return mostCommonToken;
   }
 
   getVocabulary() {
