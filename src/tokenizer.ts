@@ -58,7 +58,7 @@ export class Tokenizer {
     let mergeOffset = 0; // Adjust index for words with multiple merges
     for (const mergeIndex of mergeIndexes) {
       // Merge tokens into one
-      targetWord.splice(mergeIndex + mergeOffset, 2, targetTokenPair);
+      targetWord.splice(mergeIndex - mergeOffset, 2, targetTokenPair);
       mergeOffset += 1;
     }
 
