@@ -17,7 +17,7 @@ export class Tokenizer {
     this.pairIndex = new Map<string, Set<number>>();
     this.frequencyMap = new Map<string, number>();
 
-    console.log(`Indexing token pairs...`);
+    // Initialize index
     this.indexAllWordTokens();
   }
 

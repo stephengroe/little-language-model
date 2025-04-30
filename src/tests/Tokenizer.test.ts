@@ -27,4 +27,18 @@ describe('Tokenizer module', () => {
     tokenizer.mergeAllTokenPairs(1);
     expect(tokenizer.getMergedText()).toEqual([['te', 's', 't', '</w>']]);
   });
+
+  test('merges multiple token pairs in the same word', () => {
+    const corpus = [['t', 'e', 's', 't', 'e', 'd', '</w>']];
+    const vocab = new Map([
+      ['t', 2],
+      ['e', 2],
+      ['s', 1],
+      ['d', 1],
+      ['</w>', 1],
+    ]);
+    const tokenizer = new Tokenizer(corpus, vocab);
+    tokenizer.mergeAllTokenPairs(1);
+    expect(tokenizer.getMergedText()).toEqual([['te', 's', 'te', 'd', '</w>']]);
+  });
 });
