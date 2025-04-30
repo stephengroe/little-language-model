@@ -4,6 +4,7 @@ import { CorpusTexts, Corpus } from './Corpus';
 import { Vocabulary } from './Vocabulary';
 import { Tokenizer } from './Tokenizer';
 import { tokenizerConfig } from './config';
+import { Embedder } from './Embedder';
 
 // Run all functions
 async function main() {
@@ -36,11 +37,7 @@ async function main() {
   }
 
   // Save raw corpus
-  await saveFile(
-    filePath,
-    'corpus-raw.txt',
-    JSON.stringify(corpus.getTexts())
-  );
+  await saveFile(filePath, 'corpus-raw.txt', JSON.stringify(corpus.getTexts()));
 
   // Build vocabulary
   console.log(`Building vocabulary...`);
@@ -86,8 +83,21 @@ async function main() {
     JSON.stringify(tokenizedCorpus)
   );
 
+  // Generate embeddings
+  console.log(`Initializing embeddings...`);
+  const embedder = new Embedder(
+    tokenizer.getVocabulary(),
+    tokenizerConfig.embeddingDimensions
+  );
+
+  await saveFile(
+    filePath,
+    `embeddings.json`,
+    JSON.stringify(Object.fromEntries(embedder.getEmbeddings()))
+  );
+
   // Log success
-  console.log(`Tokenization complete!`);
+  console.log(`Steps complete!`);
 }
 
 // Tokenize corpus

@@ -13,5 +13,6 @@ export const tokenizerConfig = {
     'the-old-curiosity-shop',
     'the-pickwick-papers',
   ],
-  outputFolder: './output/tokenizing-benchmarks',
+  outputFolder: './output/embedding',
+  embeddingDimensions: 1,
 };
