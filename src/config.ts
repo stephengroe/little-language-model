@@ -1,5 +1,5 @@
 export const tokenizerConfig = {
-  vocabularySize: 10_000,
+  vocabularySize: 5_000,
   inputTextDirectory: './data/dickens/',
   inputTexts: [
     'a-christmas-carol',

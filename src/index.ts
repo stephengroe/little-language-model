@@ -8,6 +8,8 @@ import { Embedder } from './Embedder';
 
 // Run all functions
 async function main() {
+  // Start timer
+  console.time(`Generate project`);
   // Create timestamp to save output
   const timestamp = `${formatTimestampAsISO(new Date())}`;
   const filePath = `${tokenizerConfig.outputFolder}-${timestamp}/`;
@@ -25,8 +27,6 @@ async function main() {
 
   // Add books to corpus
   for (const bookTitle of tokenizerConfig.inputTexts) {
-    // Log
-    console.log(`Adding ${bookTitle}...`);
     // Load book file
     const content = await loadFile(
       tokenizerConfig.inputTextDirectory,
@@ -40,7 +40,7 @@ async function main() {
   await saveFile(filePath, 'corpus-raw.txt', JSON.stringify(corpus.getTexts()));
 
   // Build vocabulary
-  console.log(`Building vocabulary...`);
+  console.log(`Generating initial vocabulary...`);
   const vocab = new Vocabulary();
   vocab.buildFromCorpus(corpus.getTexts());
   await saveFile(
@@ -49,17 +49,10 @@ async function main() {
     JSON.stringify(Object.fromEntries(vocab.getVocab()))
   );
 
-  // Build list of tokens
-  console.log(`Building tokenizer...`);
+  // Tokenizing
+  console.log(`Generating tokens from corpus...`);
   const tokenizer = new Tokenizer(corpus.getTexts(), vocab.getVocab());
-
-  console.log(
-    `Replacing token pairs for ${tokenizerConfig.vocabularySize} tokens...`
-  );
-  console.time(`Token merging`);
-
   tokenizer.mergeAllTokenPairs(tokenizerConfig.vocabularySize);
-  console.timeEnd(`Token merging`);
   await saveFile(
     filePath,
     `corpus-merged.txt`,
@@ -98,6 +91,7 @@ async function main() {
 
   // Log success
   console.log(`Steps complete!`);
+  console.timeEnd(`Generate project`);
 }
 
 // Tokenize corpus

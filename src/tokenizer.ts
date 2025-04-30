@@ -97,10 +97,6 @@ export class Tokenizer {
       this.vocab.set(mostCommonPair, totalTokens);
       // Increment merged tokens
       totalTokens += 1;
-      // Log progress every 100 tokens
-      if (totalTokens % 100 === 0) {
-        console.log(`Merged token ${totalTokens}/${vocabularySize}`);
-      }
     }
   }
 
