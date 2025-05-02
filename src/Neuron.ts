@@ -13,6 +13,7 @@ export class Neuron {
   }
 
   getDotProduct(inputs: number[]): number {
+    // Multiple inputs by weights and sum to a single number
     return inputs.reduce((total, input, index) => {
       return (total += input * this.weights[index]);
     });
