@@ -13,6 +13,20 @@ export class NeuralNetwork {
     return this.layers;
   }
 
+  // Mean squared error
+  loss(input: number[], answerKey: number[]): number {
+    // Throw error if input and answers don't match up
+    if (input.length !== answerKey.length) {
+      throw new Error(`Input and answerKey must be of same length`);
+    }
+
+    const squaredErrors = input.reduce((acc, value, index) => {
+      return acc + Math.pow(value - answerKey[index], 2);
+    }, 0);
+
+    return squaredErrors / input.length;
+  }
+
   predict(input: number[]): number[] {
     let result = input.slice();
 
