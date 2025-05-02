@@ -8,8 +8,8 @@ export class Neuron {
       throw new Error(`Input length must be greater than 1 (got ${inputSize})`);
     }
 
-    this.weights = Array.from({ length: inputSize }, () => Math.random());
-    this.bias = Math.random();
+    this.weights = Array.from({ length: inputSize }, () => Math.random() - 0.5);
+    this.bias = Math.random() - 0.5;
   }
 
   getDotProduct(inputs: number[]): number {
