@@ -5,6 +5,7 @@ import { Vocabulary } from './Vocabulary';
 import { Tokenizer } from './Tokenizer';
 import { tokenizerConfig } from './config';
 import { Embedder } from './Embedder';
+import { NeuralNetwork } from './NeuralNetwork';
 
 // Run all functions
 async function main() {
@@ -88,6 +89,11 @@ async function main() {
     `embeddings.json`,
     JSON.stringify(Object.fromEntries(embedder.getEmbeddings()))
   );
+
+  // Run neural net
+  const neuralNet = new NeuralNetwork(5, 10);
+  const data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  console.log(neuralNet.predict(data));
 
   // Log success
   console.log(`Steps complete!`);

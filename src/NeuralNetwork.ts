@@ -34,6 +34,6 @@ export class NeuralNetwork {
     );
     const denominator = adjustedInput.reduce((acc, curr) => (acc += curr), 0);
 
-    return adjustedInput.map((expNum) => expNum / denominator);
+    return adjustedInput.map((inputNum) => inputNum / denominator);
   }
 }
