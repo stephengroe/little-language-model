@@ -3,8 +3,10 @@ import { Layer } from './Layer';
 export class NeuralNetwork {
   private layers: Layer[];
 
-  constructor(layerSize: number, inputSize: number) {
-    this.layers = Array.from({ length: layerSize }, () => new Layer(inputSize));
+  constructor(layers: number, depth: number) {
+    this.layers = Array.from({ length: layers }, () => {
+      return new Layer(depth);
+    });
   }
 
   getLayers(): Layer[] {
@@ -27,6 +29,11 @@ export class NeuralNetwork {
     // Get max to subtract for numerical stability
     const max = Math.max(...input);
 
-    return input.map((weight) => Math.exp((weight - max) / safeTemp));
+    const adjustedInput = input.map((weight) =>
+      Math.exp((weight - max) / safeTemp)
+    );
+    const denominator = adjustedInput.reduce((acc, curr) => (acc += curr), 0);
+
+    return adjustedInput.map((expNum) => expNum / denominator);
   }
 }
