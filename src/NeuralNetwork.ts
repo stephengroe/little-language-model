@@ -16,11 +16,20 @@ export class NeuralNetwork {
   predict(input: number[]): number[] {
     let result = input.slice();
 
-    for (const layer of this.layers) {
+    console.log(`Neural net input: ${this.truncateVector(input)}`);
+
+    for (const [index, layer] of this.layers.entries()) {
       result = layer.forward(result);
+      console.log(
+        `Output from layer #${index}: ${this.truncateVector(result)}`
+      );
     }
 
-    return this.applySoftMax(result);
+    const adjustedResult = this.applySoftMax(result);
+
+    console.log(`Neural net output: ${this.truncateVector(adjustedResult)}`);
+
+    return adjustedResult;
   }
 
   applySoftMax(input: number[], temperature: number = 1): number[] {
@@ -35,5 +44,9 @@ export class NeuralNetwork {
     const denominator = adjustedInput.reduce((acc, curr) => (acc += curr), 0);
 
     return adjustedInput.map((inputNum) => inputNum / denominator);
+  }
+
+  truncateVector(vector: number[]): number[] {
+    return vector.map((num) => Math.round(num * 100) / 100);
   }
 }
