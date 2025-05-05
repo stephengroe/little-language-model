@@ -13,12 +13,20 @@ export class NeuralNetwork {
     return this.layers;
   }
 
-  train(input: number[], answerKey: number[]) {
-    const result = this.predict(input);
-    const loss = this.loss(result, answerKey);
+  train(input: number[], answerKey: number[], epochs: number) {
+    for (let i = 0; i < epochs; i++) {
+      console.log(`\nEpoch #${i + 1}`);
 
-    console.log(`Loss: ${loss}`);
+      const result = this.predict(input);
+      const loss = this.loss(result, answerKey);
+      console.log(`Loss: ${loss}`);
+
+      this.backward();
+    }
   }
+
+  // Back propogation
+  backward() {}
 
   // Mean squared error
   loss(input: number[], answerKey: number[]): number {

@@ -15,4 +15,5 @@ export const tokenizerConfig = {
   ],
   outputFolder: './output/embedding',
   embeddingDimensions: 1,
+  epochs: 3,
 };

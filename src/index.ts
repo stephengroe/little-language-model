@@ -94,7 +94,7 @@ async function main() {
   const neuralNet = new NeuralNetwork(5, 10);
   const data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const answerKey = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
-  neuralNet.train(data, answerKey);
+  neuralNet.train(data, answerKey, tokenizerConfig.epochs);
 
   // Log success
   console.log(`Steps complete!`);
