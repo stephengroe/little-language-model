@@ -13,6 +13,13 @@ export class NeuralNetwork {
     return this.layers;
   }
 
+  train(input: number[], answerKey: number[]) {
+    const result = this.predict(input);
+    const loss = this.loss(result, answerKey);
+
+    console.log(`Loss: ${loss}`);
+  }
+
   // Mean squared error
   loss(input: number[], answerKey: number[]): number {
     // Throw error if input and answers don't match up

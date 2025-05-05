@@ -93,7 +93,8 @@ async function main() {
   // Run neural net
   const neuralNet = new NeuralNetwork(5, 10);
   const data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  console.log(neuralNet.predict(data));
+  const answerKey = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+  neuralNet.train(data, answerKey);
 
   // Log success
   console.log(`Steps complete!`);
