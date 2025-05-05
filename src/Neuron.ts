@@ -9,7 +9,7 @@ export class Neuron {
     }
 
     this.weights = Array.from({ length: inputSize }, () => Math.random() - 0.5);
-    this.bias = Math.random() - 0.5;
+    this.bias = 0;
   }
 
   getDotProduct(inputs: number[]): number {
