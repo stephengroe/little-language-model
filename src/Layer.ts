@@ -1,7 +1,7 @@
-import { Neuron } from './Neuron';
+import { Node } from './Node';
 
 export class Layer {
-  private neurons: Neuron[] = [];
+  private neurons: Node[] = [];
 
   constructor(inputSize: number) {
     // Validate input size
@@ -9,10 +9,7 @@ export class Layer {
       throw new Error(`Input size must be greater than one (got ${inputSize})`);
     }
 
-    this.neurons = Array.from(
-      { length: inputSize },
-      () => new Neuron(inputSize)
-    );
+    this.neurons = Array.from({ length: inputSize }, () => new Node(inputSize));
   }
 
   forward(input: number[]): number[] {
@@ -21,7 +18,7 @@ export class Layer {
     });
   }
 
-  getNeurons(): Neuron[] {
+  getNeurons(): Node[] {
     return this.neurons;
   }
 }

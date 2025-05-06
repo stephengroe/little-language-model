@@ -1,4 +1,4 @@
-export class Neuron {
+export class Node {
   private weights: number[];
   private bias: number;
 
