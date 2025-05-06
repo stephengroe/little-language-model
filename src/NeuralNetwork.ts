@@ -15,23 +15,36 @@ export class NeuralNetwork {
 
   train(
     input: number[],
-    answerKey: number[],
+    expected: number[],
     epochs: number,
     learningRate: number
   ) {
     for (let i = 0; i < epochs; i++) {
       console.log(`\nEpoch #${i + 1}`);
 
-      const result = this.predict(input);
-      const loss = this.loss(result, answerKey);
+      const predicted = this.predict(input);
+      const loss = this.loss(predicted, expected);
       console.log(`Loss: ${loss}`);
 
-      this.backward();
+      const lossGradient = this.getLossGradient(predicted, expected);
+
+      this.backward(lossGradient, learningRate);
     }
   }
 
   // Back propogation
-  backward() {}
+  backward(lossGradient: number[], learningRate: number) {
+    console.log(`Running gradient descent across network...`);
+    let layerLossGradient = lossGradient.slice();
+
+    // Move backward across layers
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      layerLossGradient = this.layers[i].gradientDescent(
+        layerLossGradient,
+        learningRate
+      );
+    }
+  }
 
   // Mean squared error
   loss(predicted: number[], expected: number[]): number {

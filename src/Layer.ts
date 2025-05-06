@@ -1,7 +1,7 @@
 import { Node } from './Node';
 
 export class Layer {
-  private neurons: Node[] = [];
+  private nodes: Node[] = [];
 
   constructor(inputSize: number) {
     // Validate input size
@@ -9,16 +9,34 @@ export class Layer {
       throw new Error(`Input size must be greater than one (got ${inputSize})`);
     }
 
-    this.neurons = Array.from({ length: inputSize }, () => new Node(inputSize));
+    this.nodes = Array.from({ length: inputSize }, () => new Node(inputSize));
   }
 
   forward(input: number[]): number[] {
-    return this.neurons.map((neuron) => {
+    return this.nodes.map((neuron) => {
       return neuron.getOutput(input);
     });
   }
 
-  getNeurons(): Node[] {
-    return this.neurons;
+  gradientDescent(lossGradient: number[], learningRate: number): number[] {
+    let nextGradient: number[] = Array.from(
+      { length: this.nodes[0].getWeights().length }, // Match length of inputs
+      () => 0
+    );
+
+    // Update weights and bias at each node and return updated gradient
+    for (let i = 0; i < this.nodes.length; i++) {
+      nextGradient = this.nodes[i].gradientDescent(
+        lossGradient[i],
+        learningRate,
+        nextGradient
+      );
+    }
+
+    return nextGradient;
+  }
+
+  getNodes(): Node[] {
+    return this.nodes;
   }
 }

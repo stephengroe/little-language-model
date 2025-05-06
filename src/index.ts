@@ -92,11 +92,11 @@ async function main() {
 
   // Run neural net
   const neuralNet = new NeuralNetwork(5, 10);
-  const data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const answerKey = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+  const input = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const expected = [1, 0, 0, 0, 1, 0, 0, 0, 0, 1];
   neuralNet.train(
-    data,
-    answerKey,
+    input,
+    expected,
     trainingConfig.epochs,
     trainingConfig.learningRate
   );
