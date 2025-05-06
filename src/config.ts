@@ -1,4 +1,4 @@
-export const tokenizerConfig = {
+export const learningConfig = {
   vocabularySize: 5_000,
   inputTextDirectory: './data/dickens/',
   inputTexts: [
@@ -16,4 +16,5 @@ export const tokenizerConfig = {
   outputFolder: './output/embedding',
   embeddingDimensions: 1,
   epochs: 3,
+  learningRate: 0.01,
 };
