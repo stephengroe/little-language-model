@@ -3,7 +3,7 @@ import { saveFile, loadFile, formatTimestampAsISO } from './utils';
 import { CorpusTexts, Corpus } from './Corpus';
 import { Vocabulary } from './Vocabulary';
 import { Tokenizer } from './Tokenizer';
-import { tokenizerConfig } from './config';
+import { trainingConfig } from './config';
 import { Embedder } from './Embedder';
 import { NeuralNetwork } from './NeuralNetwork';
 
@@ -13,7 +13,7 @@ async function main() {
   console.time(`Generate project`);
   // Create timestamp to save output
   const timestamp = `${formatTimestampAsISO(new Date())}`;
-  const filePath = `${tokenizerConfig.outputFolder}-${timestamp}/`;
+  const filePath = `${trainingConfig.outputFolder}-${timestamp}/`;
 
   // Create new folder to save all output
   try {
@@ -27,10 +27,10 @@ async function main() {
   const corpus = new Corpus();
 
   // Add books to corpus
-  for (const bookTitle of tokenizerConfig.inputTexts) {
+  for (const bookTitle of trainingConfig.inputTexts) {
     // Load book file
     const content = await loadFile(
-      tokenizerConfig.inputTextDirectory,
+      trainingConfig.inputTextDirectory,
       `${bookTitle}.txt`
     );
     // Build corpus from document
@@ -53,7 +53,7 @@ async function main() {
   // Tokenizing
   console.log(`Generating tokens from corpus...`);
   const tokenizer = new Tokenizer(corpus.getTexts(), vocab.getVocab());
-  tokenizer.mergeAllTokenPairs(tokenizerConfig.vocabularySize);
+  tokenizer.mergeAllTokenPairs(trainingConfig.vocabularySize);
   await saveFile(
     filePath,
     `corpus-merged.txt`,
@@ -81,7 +81,7 @@ async function main() {
   console.log(`Initializing embeddings...`);
   const embedder = new Embedder(
     tokenizer.getVocabulary(),
-    tokenizerConfig.embeddingDimensions
+    trainingConfig.embeddingDimensions
   );
 
   await saveFile(
@@ -94,7 +94,12 @@ async function main() {
   const neuralNet = new NeuralNetwork(5, 10);
   const data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const answerKey = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
-  neuralNet.train(data, answerKey, tokenizerConfig.epochs);
+  neuralNet.train(
+    data,
+    answerKey,
+    trainingConfig.epochs,
+    trainingConfig.learningRate
+  );
 
   // Log success
   console.log(`Steps complete!`);

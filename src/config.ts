@@ -1,4 +1,4 @@
-export const learningConfig = {
+export const trainingConfig = {
   vocabularySize: 5_000,
   inputTextDirectory: './data/dickens/',
   inputTexts: [
