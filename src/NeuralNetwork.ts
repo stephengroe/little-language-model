@@ -13,7 +13,12 @@ export class NeuralNetwork {
     return this.layers;
   }
 
-  train(input: number[], answerKey: number[], epochs: number) {
+  train(
+    input: number[],
+    answerKey: number[],
+    epochs: number,
+    learningRate: number
+  ) {
     for (let i = 0; i < epochs; i++) {
       console.log(`\nEpoch #${i + 1}`);
 
@@ -29,17 +34,17 @@ export class NeuralNetwork {
   backward() {}
 
   // Mean squared error
-  loss(input: number[], answerKey: number[]): number {
-    // Throw error if input and answers don't match up
-    if (input.length !== answerKey.length) {
-      throw new Error(`Input and answerKey must be of same length`);
+  loss(predicted: number[], expected: number[]): number {
+    // Throw error if predicted and expected arrays don't match up
+    if (predicted.length !== expected.length) {
+      throw new Error(`Predicted and expected must be of same length`);
     }
 
-    const squaredErrors = input.reduce((acc, value, index) => {
-      return acc + Math.pow(value - answerKey[index], 2);
+    const squaredErrors = predicted.reduce((acc, value, index) => {
+      return acc + Math.pow(value - expected[index], 2);
     }, 0);
 
-    return squaredErrors / input.length;
+    return squaredErrors / predicted.length;
   }
 
   predict(input: number[]): number[] {
@@ -59,6 +64,13 @@ export class NeuralNetwork {
     console.log(`Neural net output: ${this.truncateVector(adjustedResult)}`);
 
     return adjustedResult;
+  }
+
+  getLossGradient(predicted: number[], expected: number[]): number[] {
+    return predicted.map((prediction, index) => {
+      // Calculate derivative of mean squared error
+      return 2 * (prediction - expected[index]);
+    });
   }
 
   applySoftMax(input: number[], temperature: number = 1): number[] {
