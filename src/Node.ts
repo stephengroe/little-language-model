@@ -2,6 +2,7 @@ export class Node {
   private weights: number[];
   private bias: number;
   private savedInputs: number[];
+  private savedOutput: number;
 
   constructor(inputSize: number) {
     // Validate input
@@ -11,6 +12,7 @@ export class Node {
 
     this.weights = Array.from({ length: inputSize }, () => Math.random() - 0.5);
     this.bias = 0;
+    this.savedOutput = 0;
     this.savedInputs = Array.from({ length: inputSize });
   }
 
@@ -26,6 +28,11 @@ export class Node {
     return Math.max(0, x);
   }
 
+  // ReLU
+  activationDerivative(x: number): number {
+    return Number(x > 0);
+  }
+
   getOutput(inputs: number[]): number {
     // Save inputs
     for (let i = 0; i < inputs.length; i++) {
@@ -33,7 +40,10 @@ export class Node {
     }
 
     const dotProduct = this.getDotProduct(inputs);
-    return this.applyActivation(dotProduct + this.bias);
+    const output = this.applyActivation(dotProduct + this.bias);
+
+    this.savedOutput = output;
+    return output;
   }
 
   gradientDescent(
@@ -41,6 +51,9 @@ export class Node {
     learningRate: number,
     nextGradient: number[]
   ): number[] {
+    // Get derivative of activation function
+    lossGradient *= this.activationDerivative(this.savedOutput);
+
     // Update weights
     for (let i = 0; i < this.weights.length; i++) {
       this.weights[i] -= learningRate * lossGradient * this.savedInputs[i];

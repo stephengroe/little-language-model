@@ -16,5 +16,5 @@ export const trainingConfig = {
   outputFolder: './output/embedding',
   embeddingDimensions: 1,
   epochs: 5,
-  learningRate: 0.001,
+  learningRate: 0.01,
 };
