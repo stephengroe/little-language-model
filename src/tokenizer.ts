@@ -10,12 +10,14 @@ export class Tokenizer {
   private pairIndex: Map<string, Set<number>>;
   // Set up frequency map
   private frequencyMap: Map<string, number>;
+  private tokenizedCorpus: number[];
 
   constructor(texts: CorpusTexts, vocab: Vocab) {
     this.texts = JSON.parse(JSON.stringify(texts));
     this.vocab = new Map<string, number>(vocab);
     this.pairIndex = new Map<string, Set<number>>();
     this.frequencyMap = new Map<string, number>();
+    this.tokenizedCorpus = [];
 
     // Initialize index
     this.indexAllWordTokens();
@@ -153,6 +155,17 @@ export class Tokenizer {
     }
 
     return mostCommonToken;
+  }
+
+  // Tokenize corpus
+  tokenizeCorpus() {
+    this.tokenizedCorpus = this.texts.flatMap((word: string[]) => {
+      return word.map((token) => this.vocab.get(token) ?? -1);
+    });
+  }
+
+  getTokenizedCorpus(): number[] {
+    return this.tokenizedCorpus;
   }
 
   getVocabulary() {

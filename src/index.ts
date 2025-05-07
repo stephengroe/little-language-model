@@ -67,10 +67,8 @@ async function main() {
 
   // Tokenize corpus
   console.log(`Tokenizing corpus...`);
-  const tokenizedCorpus = tokenizeCorpus(
-    tokenizer.getMergedText(),
-    tokenizer.getVocabulary()
-  );
+  await tokenizer.tokenizeCorpus();
+  const tokenizedCorpus = tokenizer.getTokenizedCorpus();
   await saveFile(
     filePath,
     `corpus-tokenized.json`,
@@ -104,24 +102,6 @@ async function main() {
   // Log success
   console.log(`Steps complete!`);
   console.timeEnd(`Generate project`);
-}
-
-// Tokenize corpus
-export function tokenizeCorpus(
-  corpus: CorpusTexts,
-  vocabulary: Map<string, number>
-): number[] {
-  // Map over each word
-  let tokenizedCorpus: number[][] = corpus.map((word: string[]) => {
-    // Map over each token
-    return word.map((token) => {
-      // Replace with token ID or -1 if not found
-      return vocabulary.get(token) ?? -1;
-    });
-  });
-  // Remove word-level subarrays, convert to simplified list of tokens
-  const flattenedCorpus = tokenizedCorpus.flat(1);
-  return flattenedCorpus;
 }
 
 main();
