@@ -39,4 +39,12 @@ export class Layer {
   getNodes(): Node[] {
     return this.nodes;
   }
+
+  getWeights(): number[][] {
+    return this.nodes.map((node) => node.getWeights());
+  }
+
+  getBiases(): number[] {
+    return this.nodes.map((node) => node.getBias());
+  }
 }

@@ -1,5 +1,13 @@
 import { Layer } from './Layer';
 
+// Types
+export type ModelState = {
+  layers: {
+    weights: number[][];
+    biases: number[];
+  }[];
+};
+
 export class NeuralNetwork {
   private layers: Layer[];
 
@@ -102,5 +110,15 @@ export class NeuralNetwork {
 
   truncateVector(vector: number[]): number[] {
     return vector.map((num) => Math.round(num * 100) / 100);
+  }
+
+  getModelState(): ModelState {
+    const layers = [];
+
+    for (const layer of this.layers) {
+      layers.push({ weights: layer.getWeights(), biases: layer.getBiases() });
+    }
+
+    return { layers: layers };
   }
 }

@@ -5,7 +5,7 @@ import { Vocabulary } from './Vocabulary';
 import { Tokenizer } from './tokenizer';
 import { trainingConfig } from './config';
 import { Embedder } from './Embedder';
-import { NeuralNetwork } from './NeuralNetwork';
+import { NeuralNetwork, ModelState } from './NeuralNetwork';
 
 // Run all functions
 async function main() {
@@ -120,6 +120,11 @@ async function main() {
     trainingConfig.epochs,
     trainingConfig.learningRate
   );
+
+  // Save model state
+  console.log(`Saving model state...`);
+  const modelState: ModelState = await neuralNet.getModelState();
+  await saveFile(filePath, `model-state.json`, JSON.stringify(modelState));
 
   // Log success
   console.log(`Steps complete!`);
