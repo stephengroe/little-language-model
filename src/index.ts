@@ -82,6 +82,12 @@ async function main() {
     trainingConfig.embeddingDimensions
   );
 
+  const trainingData = await embedder.generateTrainingData(
+    tokenizedCorpus,
+    trainingConfig.word2VecContextSize
+  );
+  await saveFile(filePath, `training-data.json`, JSON.stringify(trainingData));
+
   await saveFile(
     filePath,
     `embeddings.json`,

@@ -17,4 +17,5 @@ export const trainingConfig = {
   embeddingDimensions: 1,
   epochs: 5,
   learningRate: 0.01,
+  word2VecContextSize: 2,
 };
