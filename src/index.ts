@@ -9,11 +9,13 @@ import { NeuralNetwork } from './NeuralNetwork';
 
 // Run all functions
 async function main() {
-  // Start timer
-  console.time(`Generate project`);
   // Create timestamp to save output
   const timestamp = `${formatTimestampAsISO(new Date())}`;
   const filePath = `${trainingConfig.outputFolder}-${timestamp}/`;
+  // Save config
+  await saveFile(filePath, `config.json`, JSON.stringify(trainingConfig));
+  // Start timer
+  console.time(`Generate project`);
 
   // Create new folder to save all output
   try {
