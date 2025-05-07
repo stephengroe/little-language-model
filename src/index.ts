@@ -93,8 +93,8 @@ async function main() {
   await saveFile(filePath, `training-data.json`, JSON.stringify(trainingData));
 
   console.log(`Vectorizing training data...`);
-  const vectorizedTrainingData = await embedder.vectorizeTrainingData(
-    trainingData[0],
+  const vectorizedTrainingData = await embedder.vectorizeBatch(
+    trainingData.slice(0, 100),
     trainingConfig.vocabularySize
   );
 

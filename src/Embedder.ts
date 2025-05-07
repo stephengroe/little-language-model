@@ -70,6 +70,24 @@ export class Embedder {
     return { input: inputVector, target: targetVector };
   }
 
+  vectorizeBatch(
+    trainingBatch: TrainingSet[],
+    vocabSize: number
+  ): { input: number[][]; target: number[][] } {
+    let resultInput: number[][] = [];
+    let resultTarget: number[][] = [];
+
+    for (let i = 0; i < trainingBatch.length; i++) {
+      const { input: vectorizedInput, target: vectorizedTarget } =
+        this.vectorizeTrainingData(trainingBatch[i], vocabSize);
+
+      resultInput.push(vectorizedInput);
+      resultTarget.push(vectorizedTarget);
+    }
+
+    return { input: resultInput, target: resultTarget };
+  }
+
   // Get embeddings
   getEmbeddings(): Map<number, number[]> {
     return this.embeddings;
