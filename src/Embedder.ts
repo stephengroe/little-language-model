@@ -48,6 +48,28 @@ export class Embedder {
     return trainingData;
   }
 
+  // Transform training data into one-hot
+  oneHot(index: number, vocabSize: number): number[] {
+    const oneHot = Array.from({ length: vocabSize }, () => 0);
+    oneHot[index] = 1;
+    return oneHot;
+  }
+
+  vectorizeTrainingData(
+    trainingData: TrainingSet,
+    vocabSize: number
+  ): { input: number[]; target: number[] } {
+    const { input, target } = trainingData;
+    const inputVector = Array.from({ length: vocabSize }, () => 0);
+    const targetVector = this.oneHot(target, vocabSize);
+
+    for (let i = 0; i < input.length; i++) {
+      inputVector[input[i]] += 1 / input.length;
+    }
+
+    return { input: inputVector, target: targetVector };
+  }
+
   // Get embeddings
   getEmbeddings(): Map<number, number[]> {
     return this.embeddings;

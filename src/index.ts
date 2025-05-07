@@ -2,20 +2,18 @@ import { mkdir } from 'fs/promises';
 import { saveFile, loadFile, formatTimestampAsISO } from './utils';
 import { CorpusTexts, Corpus } from './Corpus';
 import { Vocabulary } from './Vocabulary';
-import { Tokenizer } from './Tokenizer';
+import { Tokenizer } from './tokenizer';
 import { trainingConfig } from './config';
 import { Embedder } from './Embedder';
 import { NeuralNetwork } from './NeuralNetwork';
 
 // Run all functions
 async function main() {
+  // Start timer
+  console.time(`Generate project`);
   // Create timestamp to save output
   const timestamp = `${formatTimestampAsISO(new Date())}`;
   const filePath = `${trainingConfig.outputFolder}-${timestamp}/`;
-  // Save config
-  await saveFile(filePath, `config.json`, JSON.stringify(trainingConfig));
-  // Start timer
-  console.time(`Generate project`);
 
   // Create new folder to save all output
   try {
@@ -23,6 +21,10 @@ async function main() {
   } catch (err) {
     console.error(`Unable to create directory ${filePath}: ${err}`);
   }
+
+  // Save config
+  console.log(`Saving config...`);
+  await saveFile(filePath, `config.json`, JSON.stringify(trainingConfig));
 
   // Build corpus
   console.log(`Creating corpus...`);
@@ -89,6 +91,18 @@ async function main() {
     trainingConfig.word2VecContextSize
   );
   await saveFile(filePath, `training-data.json`, JSON.stringify(trainingData));
+
+  console.log(`Vectorizing training data...`);
+  const vectorizedTrainingData = await embedder.vectorizeTrainingData(
+    trainingData[0],
+    trainingConfig.vocabularySize
+  );
+
+  await saveFile(
+    filePath,
+    `vectorized-training-data.json`,
+    JSON.stringify(vectorizedTrainingData)
+  );
 
   await saveFile(
     filePath,
