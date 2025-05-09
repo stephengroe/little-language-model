@@ -1,4 +1,5 @@
 import { ModelState, NeuralNetwork } from './NeuralNetwork';
+import { shuffleArray } from './utils';
 
 // Types
 export type TrainingSet = {
@@ -31,33 +32,34 @@ export class Embedder {
 
   // Train
   async train(
-    epochs: number,
+    batchSize: number,
+    contextWindow: number,
     learningRate: number,
-    contextWindow: number
+    epochs: number
   ): Promise<ModelState> {
     const trainingData = await this.generateTrainingData(contextWindow);
 
     for (let i = 0; i < epochs; i++) {
       console.log(`\nEpoch #${i + 1}`);
 
-      const totalBatches = Math.round(trainingData.length / 100);
+      // Shuffle data for new epoch
+      const shuffledData = shuffleArray(trainingData);
 
+      const totalBatches = Math.round(shuffledData.length / batchSize);
       let batchIndex = 0;
       do {
-        console.log(`Training batch ${batchIndex / 100 + 1}/${totalBatches}`);
+        console.log(
+          `Training batch ${Math.floor(batchIndex / batchSize) + 1}/${totalBatches}`
+        );
         const vectorizedTrainingData = await this.vectorizeBatch(
-          trainingData.slice(batchIndex, batchIndex + 100),
+          shuffledData.slice(batchIndex, batchIndex + batchSize),
           this.vocabularySize
         );
 
-        this.neuralNet.trainOnBatch(
-          vectorizedTrainingData,
-          epochs,
-          learningRate
-        );
+        this.neuralNet.trainOnBatch(vectorizedTrainingData, learningRate);
 
-        batchIndex += 100;
-      } while (batchIndex < trainingData.length);
+        batchIndex += batchSize;
+      } while (batchIndex < shuffledData.length);
     }
 
     return await this.neuralNet.getModelState();

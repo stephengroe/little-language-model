@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'fs/promises';
 
-// Utility function to read from disk
+// Read from disk
 export async function loadFile(
   filePath: string,
   fileName: string
@@ -17,7 +17,7 @@ export async function loadFile(
   return convertedData;
 }
 
-// Utility function to write to disk
+// Write to disk
 export async function saveFile(
   filePath: string,
   fileName: string,
@@ -45,4 +45,14 @@ export function formatTimestampAsISO(date: Date) {
   }
 
   return [year, month, day, hour, minute, second].join('');
+}
+
+// Shuffle array with Fisher-Yates algorithm
+export function shuffleArray<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
 }

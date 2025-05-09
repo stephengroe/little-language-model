@@ -55,9 +55,10 @@ async function main() {
     tokenizer.getTokenizedCorpus()
   );
   const embeddingModel = await embedder.train(
-    trainingConfig.embedding.epochs,
+    trainingConfig.embedding.batchSize,
+    trainingConfig.embedding.contextWindow,
     trainingConfig.embedding.learningRate,
-    trainingConfig.embedding.contextWindow
+    trainingConfig.embedding.epochs
   );
   await saveFile(filePath, `model-state.json`, JSON.stringify(embeddingModel));
 

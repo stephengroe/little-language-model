@@ -36,7 +36,6 @@ export class NeuralNetwork {
 
   trainOnBatch(
     batch: { input: number[][]; target: number[][] },
-    epochs: number,
     learningRate: number
   ) {
     for (let i = 0; i < batch.input.length; i++) {
