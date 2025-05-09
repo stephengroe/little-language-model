@@ -1,3 +1,5 @@
+import { loadFile } from './utils';
+
 // Constants for tokenization boundaries
 const wordBoundaryToken = '</w>';
 const textSeparatorToken = '<|sep|>';
@@ -34,6 +36,15 @@ export class Corpus {
 
     // Add text separator
     this.texts.push([textSeparatorToken]);
+  }
+
+  // Add text in bulk
+  async importTexts(fileNames: string[], filePath: string) {
+    for (const fileName of fileNames) {
+      const content = await loadFile(filePath, fileName);
+      const text = content.toString();
+      this.addText(text);
+    }
   }
 
   // Return texts

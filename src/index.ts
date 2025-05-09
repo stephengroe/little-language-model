@@ -29,30 +29,16 @@ async function main() {
   // Build corpus
   console.log(`Creating corpus...`);
   const corpus = new Corpus();
-
-  // Add books to corpus
-  for (const bookTitle of trainingConfig.embedding.inputTexts) {
-    // Load book file
-    const content = await loadFile(
-      trainingConfig.embedding.inputTextDirectory,
-      `${bookTitle}.txt`
-    );
-    // Build corpus from document
-    corpus.addText(content);
-  }
-
-  // Save raw corpus
+  await corpus.importTexts(
+    trainingConfig.embedding.inputTexts,
+    trainingConfig.embedding.inputTextDirectory
+  );
   await saveFile(filePath, 'corpus-raw.txt', JSON.stringify(corpus.getTexts()));
 
   // Build vocabulary
-  console.log(`Generating initial vocabulary...`);
+  console.log(`Tokenizing..`);
   const vocab = new Vocabulary();
   vocab.buildFromCorpus(corpus.getTexts());
-  await saveFile(
-    filePath,
-    `vocabulary.json`,
-    JSON.stringify(Object.fromEntries(vocab.getVocab()))
-  );
 
   // Tokenizing
   console.log(`Generating tokens from corpus...`);
