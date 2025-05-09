@@ -11,9 +11,9 @@ export type ModelState = {
 export class NeuralNetwork {
   private layers: Layer[];
 
-  constructor(layers: number, depth: number) {
-    this.layers = Array.from({ length: layers }, () => {
-      return new Layer(depth);
+  constructor(layerSizes: number[]) {
+    this.layers = Array.from({ length: layerSizes.length }, (_, i) => {
+      return new Layer(layerSizes[i]);
     });
   }
 

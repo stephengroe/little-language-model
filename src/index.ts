@@ -31,10 +31,10 @@ async function main() {
   const corpus = new Corpus();
 
   // Add books to corpus
-  for (const bookTitle of trainingConfig.inputTexts) {
+  for (const bookTitle of trainingConfig.embedding.inputTexts) {
     // Load book file
     const content = await loadFile(
-      trainingConfig.inputTextDirectory,
+      trainingConfig.embedding.inputTextDirectory,
       `${bookTitle}.txt`
     );
     // Build corpus from document
@@ -57,7 +57,7 @@ async function main() {
   // Tokenizing
   console.log(`Generating tokens from corpus...`);
   const tokenizer = new Tokenizer(corpus.getTexts(), vocab.getVocab());
-  tokenizer.mergeAllTokenPairs(trainingConfig.vocabularySize);
+  tokenizer.mergeAllTokenPairs(trainingConfig.embedding.vocabularySize);
   await saveFile(
     filePath,
     `corpus-merged.txt`,
@@ -83,13 +83,18 @@ async function main() {
   console.log(`Initializing embeddings...`);
   const embedder = new Embedder(
     tokenizer.getVocabulary(),
-    trainingConfig.embeddingDimensions
+    trainingConfig.embedding.hiddenSize
   );
-  const neuralNet = new NeuralNetwork(1, 64);
+  const embeddingLayerSizes = [
+    trainingConfig.embedding.vocabularySize,
+    trainingConfig.embedding.hiddenSize,
+    trainingConfig.embedding.vocabularySize,
+  ];
+  const neuralNet = new NeuralNetwork(embeddingLayerSizes);
 
   const trainingData = await embedder.generateTrainingData(
     tokenizedCorpus,
-    trainingConfig.word2VecContextSize
+    trainingConfig.embedding.contextWindow
   );
   await saveFile(filePath, `training-data.json`, JSON.stringify(trainingData));
 
@@ -100,13 +105,13 @@ async function main() {
     console.log(`Training batch ${batchIndex}-${batchIndex + 100}`);
     const vectorizedTrainingData = await embedder.vectorizeBatch(
       trainingData.slice(batchIndex, batchIndex + 100),
-      trainingConfig.vocabularySize
+      trainingConfig.embedding.vocabularySize
     );
 
     neuralNet.trainOnBatch(
       vectorizedTrainingData,
-      trainingConfig.epochs,
-      trainingConfig.learningRate
+      trainingConfig.embedding.epochs,
+      trainingConfig.embedding.learningRate
     );
 
     batchIndex += 100;
