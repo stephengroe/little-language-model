@@ -1,26 +1,39 @@
 import { CorpusTexts } from './Corpus';
-import { Vocab } from './Vocabulary';
 
 export class Tokenizer {
+  private vocab: Map<string, number>;
   // Set up corpus for merging
   private texts: CorpusTexts;
-  // Set up vocabulary
-  private vocab: Vocab;
   // Set up index (to store locations of pairs for merging)
   private pairIndex: Map<string, Set<number>>;
   // Set up frequency map
   private frequencyMap: Map<string, number>;
   private tokenizedCorpus: number[];
 
-  constructor(texts: CorpusTexts, vocab: Vocab) {
+  constructor(texts: CorpusTexts) {
     this.texts = JSON.parse(JSON.stringify(texts));
-    this.vocab = new Map<string, number>(vocab);
     this.pairIndex = new Map<string, Set<number>>();
     this.frequencyMap = new Map<string, number>();
     this.tokenizedCorpus = [];
 
-    // Initialize index
+    this.vocab = this.buildVocabularyFromCorpus(texts);
     this.indexAllWordTokens();
+  }
+
+  buildVocabularyFromCorpus(corpus: CorpusTexts): Map<string, number> {
+    const uniqueTokens = new Set<string>();
+
+    for (const word of corpus) {
+      for (const token of word) {
+        uniqueTokens.add(token);
+      }
+    }
+
+    return new Map<string, number>(
+      Array.from(uniqueTokens).map((token, index) => {
+        return [token, index];
+      })
+    );
   }
 
   // Merge token pairs in a single word

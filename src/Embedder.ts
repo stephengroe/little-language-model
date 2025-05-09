@@ -1,5 +1,3 @@
-import { Vocab } from './Vocabulary';
-
 // Types
 export type TrainingSet = {
   input: number[];
@@ -11,13 +9,13 @@ export class Embedder {
   private embeddings: Map<number, number[]>;
 
   // Constructor
-  constructor(vocabulary: Vocab, dimensions: number) {
+  constructor(vocabulary: Map<string, number>, dimensions: number) {
     this.embeddings = new Map<number, number[]>();
     this.initializeVectors(vocabulary, dimensions);
   }
 
   // Initialize embeddings
-  initializeVectors(vocabulary: Vocab, dimensions: number) {
+  initializeVectors(vocabulary: Map<string, number>, dimensions: number) {
     // Iterate over vocabulary
     for (const [token, tokenId] of vocabulary) {
       // Create array of random numbers

@@ -1,8 +1,7 @@
 import { mkdir } from 'fs/promises';
 import { saveFile, loadFile, formatTimestampAsISO } from './utils';
 import { CorpusTexts, Corpus } from './Corpus';
-import { Vocabulary } from './Vocabulary';
-import { Tokenizer } from './tokenizer';
+import { Tokenizer } from './Tokenizer';
 import { trainingConfig } from './config';
 import { Embedder } from './Embedder';
 import { NeuralNetwork, ModelState } from './NeuralNetwork';
@@ -35,14 +34,9 @@ async function main() {
   );
   await saveFile(filePath, 'corpus-raw.txt', JSON.stringify(corpus.getTexts()));
 
-  // Build vocabulary
-  console.log(`Tokenizing..`);
-  const vocab = new Vocabulary();
-  vocab.buildFromCorpus(corpus.getTexts());
-
   // Tokenizing
   console.log(`Generating tokens from corpus...`);
-  const tokenizer = new Tokenizer(corpus.getTexts(), vocab.getVocab());
+  const tokenizer = new Tokenizer(corpus.getTexts());
   tokenizer.mergeAllTokenPairs(trainingConfig.embedding.vocabularySize);
   await saveFile(
     filePath,

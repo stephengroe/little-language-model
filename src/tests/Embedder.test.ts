@@ -1,9 +1,8 @@
 import { Embedder } from '../Embedder';
-import { Vocab } from '../Vocabulary';
 
 describe('Embedder module', () => {
   test('initializes embeddings with correct random dimensions', () => {
-    const vocabulary: Vocab = new Map([
+    const vocabulary = new Map<string, number>([
       ['a', 0],
       ['b', 1],
       ['c', 2],
