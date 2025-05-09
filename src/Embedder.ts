@@ -8,7 +8,6 @@ export type TrainingSet = {
 
 export class Embedder {
   // Create vocabulary
-  private embeddings: Map<number, number[]>;
   private vocabularySize: number;
   private neuralNet: NeuralNetwork;
   private trainingData: number[];
@@ -19,7 +18,6 @@ export class Embedder {
     vectorSize: number,
     trainingData: number[]
   ) {
-    this.embeddings = new Map<number, number[]>();
     this.vocabularySize = vocabularySize;
     this.trainingData = trainingData;
 
@@ -39,18 +37,28 @@ export class Embedder {
   ): Promise<ModelState> {
     const trainingData = await this.generateTrainingData(contextWindow);
 
-    let batchIndex = 0;
-    do {
-      console.log(`Training batch ${batchIndex}-${batchIndex + 100}`);
-      const vectorizedTrainingData = await this.vectorizeBatch(
-        trainingData.slice(batchIndex, batchIndex + 100),
-        this.vocabularySize
-      );
+    for (let i = 0; i < epochs; i++) {
+      console.log(`\nEpoch #${i + 1}`);
 
-      this.neuralNet.trainOnBatch(vectorizedTrainingData, epochs, learningRate);
+      const totalBatches = Math.round(trainingData.length / 100);
 
-      batchIndex += 100;
-    } while (batchIndex < trainingData.length);
+      let batchIndex = 0;
+      do {
+        console.log(`Training batch ${batchIndex / 100 + 1}/${totalBatches}`);
+        const vectorizedTrainingData = await this.vectorizeBatch(
+          trainingData.slice(batchIndex, batchIndex + 100),
+          this.vocabularySize
+        );
+
+        this.neuralNet.trainOnBatch(
+          vectorizedTrainingData,
+          epochs,
+          learningRate
+        );
+
+        batchIndex += 100;
+      } while (batchIndex < trainingData.length);
+    }
 
     return await this.neuralNet.getModelState();
   }
@@ -116,10 +124,5 @@ export class Embedder {
     }
 
     return { input: resultInput, target: resultTarget };
-  }
-
-  // Get embeddings
-  getEmbeddings(): Map<number, number[]> {
-    return this.embeddings;
   }
 }

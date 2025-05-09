@@ -50,15 +50,10 @@ async function main() {
     trainingConfig.embedding.vectorSize,
     tokenizer.getTokenizedCorpus()
   );
-  const embeddingModel = embedder.train(
+  const embeddingModel = await embedder.train(
     trainingConfig.embedding.epochs,
     trainingConfig.embedding.learningRate,
     trainingConfig.embedding.contextWindow
-  );
-  await saveFile(
-    filePath,
-    `embeddings.json`,
-    JSON.stringify(Object.fromEntries(embedder.getEmbeddings()))
   );
   await saveFile(filePath, `model-state.json`, JSON.stringify(embeddingModel));
 

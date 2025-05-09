@@ -26,23 +26,12 @@ export class NeuralNetwork {
     return this.layers;
   }
 
-  train(
-    input: number[],
-    expected: number[],
-    epochs: number,
-    learningRate: number
-  ) {
-    for (let i = 0; i < epochs; i++) {
-      console.log(`\nEpoch #${i + 1}`);
+  train(input: number[], expected: number[], learningRate: number) {
+    const predicted = this.predict(input);
+    const loss = this.loss(predicted, expected);
+    const lossGradient = this.getLossGradient(predicted, expected);
 
-      const predicted = this.predict(input);
-      const loss = this.loss(predicted, expected);
-      console.log(`Loss: ${loss}`);
-
-      const lossGradient = this.getLossGradient(predicted, expected);
-
-      this.backward(lossGradient, learningRate);
-    }
+    this.backward(lossGradient, learningRate);
   }
 
   trainOnBatch(
@@ -51,13 +40,12 @@ export class NeuralNetwork {
     learningRate: number
   ) {
     for (let i = 0; i < batch.input.length; i++) {
-      this.train(batch.input[i], batch.target[i], epochs, learningRate);
+      this.train(batch.input[i], batch.target[i], learningRate);
     }
   }
 
   // Back propogation
   backward(lossGradient: number[], learningRate: number) {
-    console.log(`Running gradient descent across network...`);
     let layerLossGradient = lossGradient.slice();
 
     // Move backward across layers
@@ -128,7 +116,11 @@ export class NeuralNetwork {
     const layers = [];
 
     for (const layer of this.layers) {
-      layers.push({ weights: layer.getWeights(), biases: layer.getBiases() });
+      const result = layers.push({
+        weights: layer.getWeights(),
+        biases: layer.getBiases(),
+      });
+      console.log(result);
     }
 
     return { layers: layers };
