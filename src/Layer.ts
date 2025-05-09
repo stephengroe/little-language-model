@@ -5,7 +5,7 @@ export class Layer {
 
   constructor(layerSize: number, inputSize: number) {
     // Validate input size
-    if (inputSize <= 1) {
+    if (inputSize < 1) {
       throw new Error(`Input size must be greater than one (got ${inputSize})`);
     }
 
@@ -14,14 +14,18 @@ export class Layer {
   }
 
   forward(input: number[]): number[] {
+    if (input.length !== this.nodes[0].getWeights().length) {
+      throw new Error(`Input length does not match weights`);
+    }
+
     return this.nodes.map((node, index) => {
       const output = node.getOutput(input);
 
       if (Number.isNaN(output)) {
         throw new Error(`Node #${index} output is NaN`);
-      } else {
-        return output;
       }
+
+      return output;
     });
   }
 
