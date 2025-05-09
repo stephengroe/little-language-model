@@ -49,7 +49,7 @@ async function main() {
 
   // Generate embeddings
   console.log(`Generating embeddings...`);
-  const embedder = new Embedder(
+  const embedder = await new Embedder(
     tokenizer.getVocabulary().size,
     trainingConfig.embedding.vectorSize,
     tokenizer.getTokenizedCorpus()

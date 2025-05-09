@@ -41,13 +41,18 @@ export class NeuralNetwork {
     for (let i = 0; i < batch.input.length; i++) {
       this.train(batch.input[i], batch.target[i], learningRate);
     }
+
+    // Apply gradients after processing batch
+    for (const layer of this.layers) {
+      layer.applyGradients(learningRate, batch.input.length);
+    }
   }
 
   // Back propogation
   backward(lossGradient: number[], learningRate: number) {
     // Move backward across layers
     for (let i = this.layers.length - 1; i >= 0; i--) {
-      lossGradient = this.layers[i].gradientDescent(lossGradient, learningRate);
+      lossGradient = this.layers[i].calculateGradients(lossGradient);
     }
   }
 

@@ -99,6 +99,10 @@ export class Embedder {
     trainingData: TrainingSet,
     vocabSize: number
   ): { input: number[]; target: number[] } {
+    if (trainingData === undefined) {
+      console.log(trainingData);
+      throw new Error(`Training data is undefined`);
+    }
     const { input, target } = trainingData;
     const inputVector = Array.from({ length: vocabSize }, () => 0);
     const targetVector = this.oneHot(target, vocabSize);

@@ -1,6 +1,8 @@
 export class Node {
   private weights: number[];
+  private weightGradients: number[];
   private bias: number;
+  private biasGradient: number;
   private savedInputs: number[];
   private savedOutput: number;
 
@@ -11,8 +13,10 @@ export class Node {
     }
 
     this.weights = Array.from({ length: inputSize }, () => Math.random() - 0.5);
-    this.savedInputs = Array(inputSize).fill(0);
+    this.weightGradients = Array(inputSize).fill(0);
     this.bias = 0;
+    this.biasGradient = 0;
+    this.savedInputs = Array(inputSize).fill(0);
     this.savedOutput = 0;
   }
 
@@ -48,23 +52,33 @@ export class Node {
     return output;
   }
 
-  gradientDescent(lossGradient: number, learningRate: number): number[] {
+  calculateGradients(lossGradient: number): number[] {
     // Get derivative of activation function
     const nodeLossGradient =
       lossGradient * this.activationDerivative(this.savedOutput);
 
-    // Update weights
-    for (let i = 0; i < this.weights.length; i++) {
-      this.weights[i] -= learningRate * nodeLossGradient * this.savedInputs[i];
+    // Store updated weights
+    for (let i = 0; i < this.weightGradients.length; i++) {
+      this.weightGradients[i] += nodeLossGradient * this.savedInputs[i];
     }
 
-    // Update bias
-    this.bias -= learningRate * nodeLossGradient;
+    // Store updated bias
+    this.biasGradient += nodeLossGradient;
 
-    // Update next gradient
-    return this.weights.map((weight) => {
-      return weight * nodeLossGradient;
-    });
+    // Return new gradient
+    return this.weights.map((weight, index) => weight * lossGradient);
+  }
+
+  applyGradients(learningRate: number, batchSize: number) {
+    for (let i = 0; i < this.weights.length; i++) {
+      const avgGradient = this.weightGradients[i] / batchSize;
+      this.weights[i] -= avgGradient * learningRate;
+      this.weightGradients[i] = 0; // reset for next batch
+    }
+
+    const avgBiasGradient = this.biasGradient / batchSize;
+    this.bias -= avgBiasGradient * learningRate;
+    this.biasGradient = 0;
   }
 
   getWeights(): number[] {

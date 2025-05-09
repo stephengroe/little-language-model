@@ -29,15 +29,12 @@ export class Layer {
     });
   }
 
-  gradientDescent(lossGradient: number[], learningRate: number): number[] {
+  calculateGradients(lossGradient: number[]): number[] {
     let accumulatedGradient = Array(this.nodes[0].getWeights().length).fill(0);
 
     // Update weights and bias at each node
     for (let i = 0; i < this.nodes.length; i++) {
-      const contrib = this.nodes[i].gradientDescent(
-        lossGradient[i],
-        learningRate
-      );
+      const contrib = this.nodes[i].calculateGradients(lossGradient[i]);
 
       // Sum all changes
       for (let j = 0; j < accumulatedGradient.length; j++) {
@@ -46,6 +43,12 @@ export class Layer {
     }
 
     return accumulatedGradient;
+  }
+
+  applyGradients(learningRate: number, batchSize: number) {
+    for (const node of this.nodes) {
+      node.applyGradients(learningRate, batchSize);
+    }
   }
 
   getNodes(): Node[] {
