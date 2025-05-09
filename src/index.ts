@@ -18,6 +18,7 @@ async function main() {
     await mkdir(filePath);
   } catch (err) {
     console.error(`Unable to create directory ${filePath}: ${err}`);
+    return;
   }
 
   // Save config
@@ -62,4 +63,6 @@ async function main() {
   console.timeEnd(`Generate project`);
 }
 
-main();
+main().catch((err) => {
+  console.error(`Fatal error: `, err);
+});
