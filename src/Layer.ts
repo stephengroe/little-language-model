@@ -3,13 +3,14 @@ import { Node } from './Node';
 export class Layer {
   private nodes: Node[] = [];
 
-  constructor(inputSize: number) {
+  constructor(layerSize: number, inputSize: number) {
     // Validate input size
     if (inputSize <= 1) {
       throw new Error(`Input size must be greater than one (got ${inputSize})`);
     }
 
-    this.nodes = Array.from({ length: inputSize }, () => new Node(inputSize));
+    // Instantiate nodes for this layer with weights based on previous layer
+    this.nodes = Array.from({ length: layerSize }, () => new Node(inputSize));
   }
 
   forward(input: number[]): number[] {

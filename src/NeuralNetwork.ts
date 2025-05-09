@@ -12,9 +12,14 @@ export class NeuralNetwork {
   private layers: Layer[];
 
   constructor(layerSizes: number[]) {
-    this.layers = Array.from({ length: layerSizes.length }, (_, i) => {
-      return new Layer(layerSizes[i]);
-    });
+    this.layers = [];
+
+    // Skip first (input) layer
+    for (let i = 1; i < layerSizes.length; i++) {
+      // Layer size (for number of nodes) and previous size (for node weights)
+      const newLayer = new Layer(layerSizes[i], layerSizes[i - 1]);
+      this.layers.push(newLayer);
+    }
   }
 
   getLayers(): Layer[] {
@@ -81,18 +86,15 @@ export class NeuralNetwork {
   predict(input: number[]): number[] {
     let result = input.slice();
 
-    console.log(`Neural net input: ${this.truncateVector(input)}`);
-
-    for (const [index, layer] of this.layers.entries()) {
+    for (const layer of this.layers) {
       result = layer.forward(result);
-      console.log(
-        `Output from layer #${index}: ${this.truncateVector(result)}`
-      );
+
+      if (result.some(Number.isNaN)) {
+        throw new Error(`Layer output includes NaN`);
+      }
     }
 
     const adjustedResult = this.applySoftMax(result);
-
-    console.log(`Neural net output: ${this.truncateVector(adjustedResult)}`);
 
     return adjustedResult;
   }
