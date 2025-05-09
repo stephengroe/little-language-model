@@ -45,14 +45,9 @@ export class NeuralNetwork {
 
   // Back propogation
   backward(lossGradient: number[], learningRate: number) {
-    let layerLossGradient = lossGradient.slice();
-
     // Move backward across layers
     for (let i = this.layers.length - 1; i >= 0; i--) {
-      layerLossGradient = this.layers[i].gradientDescent(
-        layerLossGradient,
-        learningRate
-      );
+      lossGradient = this.layers[i].gradientDescent(lossGradient, learningRate);
     }
   }
 
@@ -75,15 +70,11 @@ export class NeuralNetwork {
 
     for (const layer of this.layers) {
       result = layer.forward(result);
-
-      if (result.some(Number.isNaN)) {
-        throw new Error(`Layer output includes NaN`);
-      }
     }
 
-    const adjustedResult = this.applySoftMax(result);
+    const adjustedResult = this.softmax(result);
 
-    return adjustedResult;
+    return result;
   }
 
   getLossGradient(predicted: number[], expected: number[]): number[] {
@@ -93,7 +84,7 @@ export class NeuralNetwork {
     });
   }
 
-  applySoftMax(input: number[], temperature: number = 1): number[] {
+  softmax(input: number[], temperature: number = 1): number[] {
     // Prevent divide by zero errors
     const safeTemp = Math.max(temperature, 1e-6);
     // Get max to subtract for numerical stability
@@ -119,7 +110,6 @@ export class NeuralNetwork {
         weights: layer.getWeights(),
         biases: layer.getBiases(),
       });
-      console.log(result);
     }
 
     return { layers: layers };

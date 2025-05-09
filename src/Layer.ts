@@ -14,8 +14,14 @@ export class Layer {
   }
 
   forward(input: number[]): number[] {
-    return this.nodes.map((neuron) => {
-      return neuron.getOutput(input);
+    return this.nodes.map((node, index) => {
+      const output = node.getOutput(input);
+
+      if (Number.isNaN(output)) {
+        throw new Error(`Node #${index} output is NaN`);
+      } else {
+        return output;
+      }
     });
   }
 

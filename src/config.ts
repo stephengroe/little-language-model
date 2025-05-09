@@ -1,7 +1,7 @@
 export const trainingConfig = {
   outputFolder: './output/embedding',
   embedding: {
-    vocabularySize: 100_000,
+    vocabularySize: 5_000,
     vectorSize: 64,
     epochs: 2,
     learningRate: 0.01,
