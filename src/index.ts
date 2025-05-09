@@ -26,12 +26,15 @@ async function main() {
   await saveFile(filePath, `config.json`, JSON.stringify(trainingConfig));
 
   // Build corpus
-  console.log(`Creating corpus...`);
+  console.log(
+    `Building corpus from ${trainingConfig.embedding.inputTexts.length} files...`
+  );
   const corpus = new Corpus();
-  await corpus.importTexts(
+  const importedWords = await corpus.importTexts(
     trainingConfig.embedding.inputTexts,
     trainingConfig.embedding.inputTextDirectory
   );
+  console.log(`Imported ${importedWords.toLocaleString()} words!`);
 
   // Generate tokens
   console.log(`Generating tokens...`);

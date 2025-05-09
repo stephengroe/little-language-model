@@ -4,12 +4,9 @@ import { loadFile } from './utils';
 const wordBoundaryToken = '</w>';
 const textSeparatorToken = '<|sep|>';
 
-// Type for texts
-export type CorpusTexts = string[][];
-
 export class Corpus {
   // List of words compiled from training
-  private texts: CorpusTexts;
+  private texts: string[][];
 
   constructor() {
     this.texts = [];
@@ -39,16 +36,19 @@ export class Corpus {
   }
 
   // Add text in bulk
-  async importTexts(fileNames: string[], filePath: string) {
+  async importTexts(fileNames: string[], filePath: string): Promise<number> {
     for (const fileName of fileNames) {
       const content = await loadFile(filePath, fileName);
       const text = content.toString();
       this.addText(text);
     }
+
+    // Return number of words imported
+    return this.texts.length;
   }
 
   // Return texts
-  getTexts(): CorpusTexts {
+  getTexts(): string[][] {
     return this.texts;
   }
 }
