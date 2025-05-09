@@ -1,3 +1,5 @@
+import { ModelState, NeuralNetwork } from './NeuralNetwork';
+
 // Types
 export type TrainingSet = {
   input: number[];
@@ -7,40 +9,70 @@ export type TrainingSet = {
 export class Embedder {
   // Create vocabulary
   private embeddings: Map<number, number[]>;
+  private vocabularySize: number;
+  private neuralNet: NeuralNetwork;
+  private trainingData: number[];
 
   // Constructor
-  constructor(vocabulary: Map<string, number>, dimensions: number) {
+  constructor(
+    vocabularySize: number,
+    vectorSize: number,
+    trainingData: number[]
+  ) {
     this.embeddings = new Map<number, number[]>();
-    this.initializeVectors(vocabulary, dimensions);
+    this.vocabularySize = vocabularySize;
+    this.trainingData = trainingData;
+
+    const neuralNetLayers = [
+      this.vocabularySize,
+      vectorSize,
+      this.vocabularySize,
+    ];
+    this.neuralNet = new NeuralNetwork(neuralNetLayers);
   }
 
-  // Initialize embeddings
-  initializeVectors(vocabulary: Map<string, number>, dimensions: number) {
-    // Iterate over vocabulary
-    for (const [token, tokenId] of vocabulary) {
-      // Create array of random numbers
-      const vectorArray = Array.from({ length: dimensions }, () => {
-        return Math.random() - 0.5; // Center around 0
-      });
-      // Set as new entry in embeddings Map
-      this.embeddings.set(tokenId, vectorArray);
-    }
+  // Train
+  async train(
+    epochs: number,
+    learningRate: number,
+    contextWindow: number
+  ): Promise<ModelState> {
+    const trainingData = await this.generateTrainingData(contextWindow);
+
+    let batchIndex = 0;
+    do {
+      console.log(`Training batch ${batchIndex}-${batchIndex + 100}`);
+      const vectorizedTrainingData = await this.vectorizeBatch(
+        trainingData.slice(batchIndex, batchIndex + 100),
+        this.vocabularySize
+      );
+
+      this.neuralNet.trainOnBatch(vectorizedTrainingData, epochs, learningRate);
+
+      batchIndex += 100;
+    } while (batchIndex < trainingData.length);
+
+    return await this.neuralNet.getModelState();
   }
 
   // Build CBOW training groups
-  generateTrainingData(corpus: number[], contextWindow: number): TrainingSet[] {
+  generateTrainingData(contextWindow: number): TrainingSet[] {
     const trainingData: TrainingSet[] = [];
 
-    for (let i = contextWindow; i < corpus.length - contextWindow; i++) {
+    for (
+      let i = contextWindow;
+      i < this.trainingData.length - contextWindow;
+      i++
+    ) {
       const input = [];
 
       // Iterate over sequences for context window
       for (let j = -contextWindow; j <= contextWindow; j++) {
         if (j === 0) continue; // skip middle token
-        input.push(corpus[i + j]);
+        input.push(this.trainingData[i + j]);
       }
 
-      trainingData.push({ input, target: corpus[i] });
+      trainingData.push({ input, target: this.trainingData[i] });
     }
 
     return trainingData;

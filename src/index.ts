@@ -1,10 +1,9 @@
 import { mkdir } from 'fs/promises';
 import { saveFile, loadFile, formatTimestampAsISO } from './utils';
-import { CorpusTexts, Corpus } from './Corpus';
+import { Corpus } from './Corpus';
 import { Tokenizer } from './Tokenizer';
 import { trainingConfig } from './config';
 import { Embedder } from './Embedder';
-import { NeuralNetwork, ModelState } from './NeuralNetwork';
 
 // Run all functions
 async function main() {
@@ -32,7 +31,6 @@ async function main() {
     trainingConfig.embedding.inputTexts,
     trainingConfig.embedding.inputTextDirectory
   );
-  await saveFile(filePath, 'corpus-raw.txt', JSON.stringify(corpus.getTexts()));
 
   // Generate tokens
   console.log(`Generating tokens...`);
@@ -41,63 +39,28 @@ async function main() {
   await tokenizer.tokenizeCorpus();
   await saveFile(
     filePath,
-    `vocabulary-merged.json`,
+    `tokens.json`,
     JSON.stringify(Object.fromEntries(tokenizer.getVocabulary()))
-  );
-  await saveFile(
-    filePath,
-    `corpus-tokenized.json`,
-    JSON.stringify(tokenizer.getTokenizedCorpus())
   );
 
   // Generate embeddings
-  console.log(`Initializing embeddings...`);
+  console.log(`Generating embeddings...`);
   const embedder = new Embedder(
-    tokenizer.getVocabulary(),
-    trainingConfig.embedding.hiddenSize
+    tokenizer.getVocabulary().size,
+    trainingConfig.embedding.vectorSize,
+    tokenizer.getTokenizedCorpus()
   );
-  const embeddingLayerSizes = [
-    trainingConfig.embedding.vocabularySize,
-    trainingConfig.embedding.hiddenSize,
-    trainingConfig.embedding.vocabularySize,
-  ];
-  const neuralNet = new NeuralNetwork(embeddingLayerSizes);
-
-  const trainingData = await embedder.generateTrainingData(
-    tokenizer.getTokenizedCorpus(),
+  const embeddingModel = embedder.train(
+    trainingConfig.embedding.epochs,
+    trainingConfig.embedding.learningRate,
     trainingConfig.embedding.contextWindow
   );
-  await saveFile(filePath, `training-data.json`, JSON.stringify(trainingData));
-
-  // Iterate over training data in batches
-  console.log(`Training on data in batches...`);
-  let batchIndex = 0;
-  do {
-    console.log(`Training batch ${batchIndex}-${batchIndex + 100}`);
-    const vectorizedTrainingData = await embedder.vectorizeBatch(
-      trainingData.slice(batchIndex, batchIndex + 100),
-      trainingConfig.embedding.vocabularySize
-    );
-
-    neuralNet.trainOnBatch(
-      vectorizedTrainingData,
-      trainingConfig.embedding.epochs,
-      trainingConfig.embedding.learningRate
-    );
-
-    batchIndex += 100;
-  } while (batchIndex < trainingData.length);
-
   await saveFile(
     filePath,
     `embeddings.json`,
     JSON.stringify(Object.fromEntries(embedder.getEmbeddings()))
   );
-
-  // Save model state
-  console.log(`Saving model state...`);
-  const modelState: ModelState = await neuralNet.getModelState();
-  await saveFile(filePath, `model-state.json`, JSON.stringify(modelState));
+  await saveFile(filePath, `model-state.json`, JSON.stringify(embeddingModel));
 
   // Log success
   console.log(`Steps complete!`);
