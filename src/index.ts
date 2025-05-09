@@ -34,29 +34,20 @@ async function main() {
   );
   await saveFile(filePath, 'corpus-raw.txt', JSON.stringify(corpus.getTexts()));
 
-  // Tokenizing
-  console.log(`Generating tokens from corpus...`);
+  // Generate tokens
+  console.log(`Generating tokens...`);
   const tokenizer = new Tokenizer(corpus.getTexts());
-  tokenizer.mergeAllTokenPairs(trainingConfig.embedding.vocabularySize);
-  await saveFile(
-    filePath,
-    `corpus-merged.txt`,
-    JSON.stringify(tokenizer.getMergedText())
-  );
+  await tokenizer.mergeAllTokenPairs(trainingConfig.embedding.vocabularySize);
+  await tokenizer.tokenizeCorpus();
   await saveFile(
     filePath,
     `vocabulary-merged.json`,
     JSON.stringify(Object.fromEntries(tokenizer.getVocabulary()))
   );
-
-  // Tokenize corpus
-  console.log(`Tokenizing corpus...`);
-  await tokenizer.tokenizeCorpus();
-  const tokenizedCorpus = tokenizer.getTokenizedCorpus();
   await saveFile(
     filePath,
     `corpus-tokenized.json`,
-    JSON.stringify(tokenizedCorpus)
+    JSON.stringify(tokenizer.getTokenizedCorpus())
   );
 
   // Generate embeddings
@@ -73,7 +64,7 @@ async function main() {
   const neuralNet = new NeuralNetwork(embeddingLayerSizes);
 
   const trainingData = await embedder.generateTrainingData(
-    tokenizedCorpus,
+    tokenizer.getTokenizedCorpus(),
     trainingConfig.embedding.contextWindow
   );
   await saveFile(filePath, `training-data.json`, JSON.stringify(trainingData));
