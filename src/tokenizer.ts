@@ -1,16 +1,14 @@
-import { CorpusTexts } from './Corpus';
-
 export class Tokenizer {
   private vocab: Map<string, number>;
   // Set up corpus for merging
-  private texts: CorpusTexts;
+  private texts: string[][];
   // Set up index (to store locations of pairs for merging)
   private pairIndex: Map<string, Set<number>>;
   // Set up frequency map
   private frequencyMap: Map<string, number>;
   private tokenizedCorpus: number[];
 
-  constructor(texts: CorpusTexts) {
+  constructor(texts: string[][]) {
     this.texts = JSON.parse(JSON.stringify(texts));
     this.pairIndex = new Map<string, Set<number>>();
     this.frequencyMap = new Map<string, number>();
@@ -20,7 +18,7 @@ export class Tokenizer {
     this.indexAllWordTokens();
   }
 
-  buildVocabularyFromCorpus(corpus: CorpusTexts): Map<string, number> {
+  buildVocabularyFromCorpus(corpus: string[][]): Map<string, number> {
     const uniqueTokens = new Set<string>();
 
     for (const word of corpus) {
@@ -98,7 +96,7 @@ export class Tokenizer {
   // Merge all token pairs
   mergeAllTokenPairs(vocabularySize: number): void {
     // Start count of all tokens
-    let totalTokens = 0;
+    let totalTokens = this.vocab.size;
 
     // While we still have merges left, continue
     while (totalTokens < vocabularySize) {
@@ -112,6 +110,10 @@ export class Tokenizer {
       this.vocab.set(mostCommonPair, totalTokens);
       // Increment merged tokens
       totalTokens += 1;
+
+      if (totalTokens % 1000 === 0) {
+        console.log(`Merged ${totalTokens}/${vocabularySize} tokens`);
+      }
     }
   }
 
@@ -173,7 +175,16 @@ export class Tokenizer {
   // Tokenize corpus
   tokenizeCorpus() {
     this.tokenizedCorpus = this.texts.flatMap((word: string[]) => {
-      return word.map((token) => this.vocab.get(token) ?? -1);
+      return word.map((token) => {
+        const foundToken = this.vocab.get(token) ?? -1;
+
+        // Error handling for tokens not found in vocabulary
+        if (foundToken < 0) {
+          throw new Error(`Token '${token}' not recognized`);
+        } else {
+          return foundToken;
+        }
+      });
     });
   }
 
