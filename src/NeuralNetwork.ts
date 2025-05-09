@@ -40,6 +40,16 @@ export class NeuralNetwork {
     }
   }
 
+  trainOnBatch(
+    batch: { input: number[][]; target: number[][] },
+    epochs: number,
+    learningRate: number
+  ) {
+    for (let i = 0; i < batch.input.length; i++) {
+      this.train(batch.input[i], batch.target[i], epochs, learningRate);
+    }
+  }
+
   // Back propogation
   backward(lossGradient: number[], learningRate: number) {
     console.log(`Running gradient descent across network...`);

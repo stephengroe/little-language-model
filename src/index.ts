@@ -85,6 +85,7 @@ async function main() {
     tokenizer.getVocabulary(),
     trainingConfig.embeddingDimensions
   );
+  const neuralNet = new NeuralNetwork(1, 64);
 
   const trainingData = await embedder.generateTrainingData(
     tokenizedCorpus,
@@ -92,33 +93,29 @@ async function main() {
   );
   await saveFile(filePath, `training-data.json`, JSON.stringify(trainingData));
 
-  console.log(`Vectorizing training data...`);
-  const vectorizedTrainingData = await embedder.vectorizeBatch(
-    trainingData.slice(0, 100),
-    trainingConfig.vocabularySize
-  );
+  // Iterate over training data in batches
+  console.log(`Training on data in batches...`);
+  let batchIndex = 0;
+  do {
+    console.log(`Training batch ${batchIndex}-${batchIndex + 100}`);
+    const vectorizedTrainingData = await embedder.vectorizeBatch(
+      trainingData.slice(batchIndex, batchIndex + 100),
+      trainingConfig.vocabularySize
+    );
 
-  await saveFile(
-    filePath,
-    `vectorized-training-data.json`,
-    JSON.stringify(vectorizedTrainingData)
-  );
+    neuralNet.trainOnBatch(
+      vectorizedTrainingData,
+      trainingConfig.epochs,
+      trainingConfig.learningRate
+    );
+
+    batchIndex += 100;
+  } while (batchIndex < trainingData.length);
 
   await saveFile(
     filePath,
     `embeddings.json`,
     JSON.stringify(Object.fromEntries(embedder.getEmbeddings()))
-  );
-
-  // Run neural net
-  const neuralNet = new NeuralNetwork(5, 10);
-  const input = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
-  const expected = [1, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-  neuralNet.train(
-    input,
-    expected,
-    trainingConfig.epochs,
-    trainingConfig.learningRate
   );
 
   // Save model state
