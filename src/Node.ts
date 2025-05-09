@@ -11,16 +11,18 @@ export class Node {
     }
 
     this.weights = Array.from({ length: inputSize }, () => Math.random() - 0.5);
+    this.savedInputs = Array(inputSize).fill(0);
     this.bias = 0;
     this.savedOutput = 0;
-    this.savedInputs = Array.from({ length: inputSize });
   }
 
   getDotProduct(inputs: number[]): number {
-    // Multiple inputs by weights and sum to a single number
-    return inputs.reduce((total, input, index) => {
-      return (total += input * this.weights[index]);
-    });
+    // Multiple inputs by weights, add bias, and sum to a single number
+    return (
+      inputs.reduce((total, input, index) => {
+        return (total += input * this.weights[index]);
+      }) + this.bias
+    );
   }
 
   applyActivation(x: number): number {
@@ -30,7 +32,7 @@ export class Node {
 
   // ReLU
   activationDerivative(x: number): number {
-    return Number(x > 0);
+    return x > 0 ? 1 : 0;
   }
 
   getOutput(inputs: number[]): number {
@@ -40,31 +42,28 @@ export class Node {
     }
 
     const dotProduct = this.getDotProduct(inputs);
-    const output = this.applyActivation(dotProduct + this.bias);
+    const output = this.applyActivation(dotProduct);
 
     this.savedOutput = output;
     return output;
   }
 
-  gradientDescent(
-    lossGradient: number,
-    learningRate: number,
-    nextGradient: number[]
-  ): number[] {
+  gradientDescent(lossGradient: number, learningRate: number): number[] {
     // Get derivative of activation function
-    lossGradient *= this.activationDerivative(this.savedOutput);
+    const nodeLossGradient =
+      lossGradient * this.activationDerivative(this.savedOutput);
 
     // Update weights
     for (let i = 0; i < this.weights.length; i++) {
-      this.weights[i] -= learningRate * lossGradient * this.savedInputs[i];
+      this.weights[i] -= learningRate * nodeLossGradient * this.savedInputs[i];
     }
 
     // Update bias
-    this.bias -= learningRate * lossGradient;
+    this.bias -= learningRate * nodeLossGradient;
 
     // Update next gradient
-    return nextGradient.map((gradient, index) => {
-      return gradient + this.weights[index] * lossGradient;
+    return this.weights.map((weight, index) => {
+      return weight * nodeLossGradient;
     });
   }
 

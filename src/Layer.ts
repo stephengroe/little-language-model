@@ -30,21 +30,22 @@ export class Layer {
   }
 
   gradientDescent(lossGradient: number[], learningRate: number): number[] {
-    let nextGradient: number[] = Array.from(
-      { length: this.nodes[0].getWeights().length }, // Match length of inputs
-      () => 0
-    );
+    let accumulatedGradient = Array(this.nodes[0].getWeights().length).fill(0);
 
-    // Update weights and bias at each node and return updated gradient
+    // Update weights and bias at each node
     for (let i = 0; i < this.nodes.length; i++) {
-      nextGradient = this.nodes[i].gradientDescent(
+      const contrib = this.nodes[i].gradientDescent(
         lossGradient[i],
-        learningRate,
-        nextGradient
+        learningRate
       );
+
+      // Sum all changes
+      for (let j = 0; j < accumulatedGradient.length; j++) {
+        accumulatedGradient[j] += contrib[j];
+      }
     }
 
-    return nextGradient;
+    return accumulatedGradient;
   }
 
   getNodes(): Node[] {
