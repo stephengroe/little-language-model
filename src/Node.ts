@@ -62,7 +62,7 @@ export class Node {
     this.bias -= learningRate * nodeLossGradient;
 
     // Update next gradient
-    return this.weights.map((weight, index) => {
+    return this.weights.map((weight) => {
       return weight * nodeLossGradient;
     });
   }
