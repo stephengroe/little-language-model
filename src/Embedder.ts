@@ -12,6 +12,7 @@ export class Embedder {
   private vocabularySize: number;
   private neuralNet: NeuralNetwork;
   private trainingData: number[];
+  private embeddings: Record<number, number[]>;
 
   // Constructor
   constructor(
@@ -21,6 +22,7 @@ export class Embedder {
   ) {
     this.vocabularySize = vocabularySize;
     this.trainingData = trainingData;
+    this.embeddings = {};
 
     const neuralNetLayers = [
       this.vocabularySize,
@@ -136,5 +138,24 @@ export class Embedder {
     }
 
     return { input: resultInput, target: resultTarget };
+  }
+
+  async buildEmbeddings() {
+    // Clear any existing embeddings
+    this.embeddings = {};
+    const embeddings: Record<number, number[]> = {};
+
+    for (let i = 0; i < this.vocabularySize; i++) {
+      const vocabOneHot = this.oneHot(i, this.vocabularySize);
+      const vector = this.neuralNet.forwardToLayer(vocabOneHot, 0);
+
+      embeddings[i] = vector;
+    }
+
+    this.embeddings = embeddings;
+  }
+
+  getEmbeddings(): Record<number, number[]> {
+    return this.embeddings;
   }
 }

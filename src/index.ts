@@ -60,7 +60,13 @@ async function main() {
     trainingConfig.embedding.learningRate,
     trainingConfig.embedding.epochs
   );
+  const embeddings = embedder.buildEmbeddings();
   await saveFile(filePath, `model-state.json`, JSON.stringify(embeddingModel));
+  await saveFile(
+    filePath,
+    `embeddings.json`,
+    JSON.stringify(embedder.getEmbeddings())
+  );
 
   // Log success
   console.log(`Steps complete!`);

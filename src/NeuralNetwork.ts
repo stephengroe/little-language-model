@@ -130,4 +130,19 @@ export class NeuralNetwork {
 
     return { layers: layers };
   }
+
+  // Get output at layer X
+  forwardToLayer(input: number[], layer: number): number[] {
+    if (layer > this.layers.length || layer < 0) {
+      throw new Error(`Layer must be valid layer ID (received ${layer})`);
+    }
+
+    let result = input;
+
+    for (let i = 0; i <= layer; i++) {
+      result = this.layers[i].forward(result);
+    }
+
+    return result;
+  }
 }

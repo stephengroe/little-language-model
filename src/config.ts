@@ -3,7 +3,7 @@ export const trainingConfig = {
   embedding: {
     vocabularySize: 5_000,
     vectorSize: 64,
-    epochs: 2,
+    epochs: 1,
     learningRate: 0.01,
     batchSize: 100,
     contextWindow: 2, // Word2Vec context words to include
