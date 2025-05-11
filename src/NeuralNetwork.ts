@@ -42,6 +42,12 @@ export class NeuralNetwork {
       this.train(batch.input[i], batch.target[i], learningRate);
     }
 
+    const sampleLoss = this.loss(
+      this.predict(batch.input[batch.input.length - 1]),
+      batch.target[batch.target.length - 1]
+    );
+    console.log(`  Loss: ${sampleLoss}`);
+
     // Apply gradients after processing batch
     for (const layer of this.layers) {
       layer.applyGradients(learningRate, batch.input.length);

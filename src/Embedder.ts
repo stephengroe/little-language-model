@@ -43,11 +43,11 @@ export class Embedder {
       console.log(`\nEpoch #${i + 1}`);
 
       // Shuffle data for new epoch
-      const shuffledData = shuffleArray(trainingData);
+      const shuffledData = trainingData; //shuffleArray(trainingData);
 
       const totalBatches = Math.round(shuffledData.length / batchSize);
       let batchIndex = 0;
-      do {
+      while (batchIndex < shuffledData.length) {
         console.log(
           `Training batch ${Math.floor(batchIndex / batchSize) + 1}/${totalBatches}`
         );
@@ -59,7 +59,7 @@ export class Embedder {
         this.neuralNet.trainOnBatch(vectorizedTrainingData, learningRate);
 
         batchIndex += batchSize;
-      } while (batchIndex < shuffledData.length);
+      }
     }
 
     return await this.neuralNet.getModelState();
@@ -99,10 +99,6 @@ export class Embedder {
     trainingData: TrainingSet,
     vocabSize: number
   ): { input: number[]; target: number[] } {
-    if (trainingData === undefined) {
-      console.log(trainingData);
-      throw new Error(`Training data is undefined`);
-    }
     const { input, target } = trainingData;
     const inputVector = Array.from({ length: vocabSize }, () => 0);
     const targetVector = this.oneHot(target, vocabSize);
@@ -122,6 +118,16 @@ export class Embedder {
     let resultTarget: number[][] = [];
 
     for (let i = 0; i < trainingBatch.length; i++) {
+      const item = trainingBatch[i];
+      if (
+        item.input === undefined ||
+        item.target === undefined ||
+        item === undefined
+      ) {
+        console.warn(`Skipping undefined input at index ${i}:`, item);
+        continue;
+      }
+
       const { input: vectorizedInput, target: vectorizedTarget } =
         this.vectorizeTrainingData(trainingBatch[i], vocabSize);
 
