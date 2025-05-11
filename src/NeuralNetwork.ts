@@ -47,6 +47,11 @@ export class NeuralNetwork {
       batch.target[batch.target.length - 1]
     );
     console.log(`  Loss: ${sampleLoss}`);
+    const randNode = Math.floor(Math.random() * 64);
+    const randWeight = Math.floor(Math.random() * 5000);
+    console.log(
+      `  Random weight (node ${randNode}, weight ${randWeight}): ${this.layers[0].getNodes()[randNode].getWeights()[randWeight]}`
+    );
 
     // Apply gradients after processing batch
     for (const layer of this.layers) {
