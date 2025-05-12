@@ -57,7 +57,7 @@ export class Embedder {
       console.log(`\nEpoch #${i + 1}`);
 
       // Shuffle data for new epoch
-      const shuffledData = trainingData; //shuffleArray(trainingData);
+      const shuffledData = shuffleArray(trainingData);
 
       const totalBatches = Math.round(shuffledData.length / batchSize);
       let batchIndex = 0;
