@@ -12,9 +12,14 @@ export class Node {
       throw new Error(`Input length must be greater than 1 (got ${inputSize})`);
     }
 
-    this.weights = Array.from({ length: inputSize }, () => Math.random() - 0.5);
+    this.weights = Array.from({ length: inputSize }, () => {
+      // He uniform initialization
+      return (
+        Math.random() * 2 * Math.sqrt(2 / inputSize) - Math.sqrt(2 / inputSize)
+      );
+    });
     this.weightGradients = Array(inputSize).fill(0);
-    this.bias = 0;
+    this.bias = Math.random() * 0.2 - 0.1; // In range [-0.1, +0.1]
     this.biasGradient = 0;
     this.savedInputs = Array(inputSize).fill(0);
     this.savedOutput = 0;
