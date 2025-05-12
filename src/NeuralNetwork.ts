@@ -63,18 +63,17 @@ export class NeuralNetwork {
     }
   }
 
-  // Mean squared error
+  // Cross entropy (softmax prediction, one-hot expected)
   loss(predicted: number[], expected: number[]): number {
     // Throw error if predicted and expected arrays don't match up
     if (predicted.length !== expected.length) {
       throw new Error(`Predicted and expected must be of same length`);
     }
 
-    const squaredErrors = predicted.reduce((acc, value, index) => {
-      return acc + Math.pow(value - expected[index], 2);
-    }, 0);
-
-    return squaredErrors / predicted.length;
+    const epsilon = 1e-15; // to prevent log(0) error
+    return expected.reduce((sum, actual, i) => {
+      return sum - actual * Math.log(Math.max(predicted[i], epsilon));
+    });
   }
 
   predict(input: number[]): number[] {
@@ -92,7 +91,7 @@ export class NeuralNetwork {
   getLossGradient(predicted: number[], expected: number[]): number[] {
     return predicted.map((prediction, index) => {
       // Calculate derivative of mean squared error
-      return 2 * (prediction - expected[index]);
+      return prediction - expected[index];
     });
   }
 
