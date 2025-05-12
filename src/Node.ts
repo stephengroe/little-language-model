@@ -88,4 +88,12 @@ export class Node {
   getBias(): number {
     return this.bias;
   }
+
+  setBias(newBias: number) {
+    this.bias = newBias;
+  }
+
+  setWeights(newWeights: number[]) {
+    this.weights = newWeights;
+  }
 }

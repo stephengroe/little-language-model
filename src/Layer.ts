@@ -62,4 +62,11 @@ export class Layer {
   getBiases(): number[] {
     return this.nodes.map((node) => node.getBias());
   }
+
+  createFromSavedModel(savedLayer: { weights: number[][]; biases: number[] }) {
+    for (let i = 0; i < savedLayer.weights.length; i++) {
+      this.nodes[i].setWeights(savedLayer.weights[i]);
+      this.nodes[i].setBias(savedLayer.biases[i]);
+    }
+  }
 }

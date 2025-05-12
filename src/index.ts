@@ -11,15 +11,15 @@ async function main() {
   console.time(`Generate project`);
   // Create timestamp to save output
   const timestamp = `${formatTimestampAsISO(new Date())}`;
-  const filePath = `${trainingConfig.outputFolder}-${timestamp}/`;
+  const filePath = `${trainingConfig.outputFolder}/`; //-${timestamp}/`;
 
   // Create new folder to save all output
-  try {
-    await mkdir(filePath);
-  } catch (err) {
-    console.error(`Unable to create directory ${filePath}: ${err}`);
-    return;
-  }
+  // try {
+  //   await mkdir(filePath);
+  // } catch (err) {
+  //   console.error(`Unable to create directory ${filePath}: ${err}`);
+  //   return;
+  // }
 
   // Save config
   console.log(`Saving config...`);
@@ -48,21 +48,32 @@ async function main() {
   );
 
   // Generate embeddings
-  console.log(`Training embeddings...`);
+  console.log(`Initializing embeddings...`);
   const embedder = await new Embedder(
     tokenizer.getVocabulary().size,
     trainingConfig.embedding.vectorSize,
     tokenizer.getTokenizedCorpus()
   );
+
+  /* FOR TRAINING EMBEDDINGS
+  console.log(`Training embeddings...`);
   const embeddingModel = await embedder.train(
     trainingConfig.embedding.batchSize,
     trainingConfig.embedding.contextWindow,
     trainingConfig.embedding.learningRate,
     trainingConfig.embedding.epochs
   );
+  await saveFile(filePath, `model-state.json`, JSON.stringify(embeddingModel));
+  */
+
+  const savedModel = await loadFile(filePath, `model-state.json`);
+  embedder.buildFromSavedModel(
+    JSON.parse(savedModel),
+    trainingConfig.embedding.vocabularySize
+  );
+
   console.log(`Saving embeddings...`);
   const embeddings = embedder.buildEmbeddings();
-  await saveFile(filePath, `model-state.json`, JSON.stringify(embeddingModel));
   await saveFile(
     filePath,
     `embeddings.json`,

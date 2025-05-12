@@ -22,6 +22,13 @@ export class NeuralNetwork {
     }
   }
 
+  buildFromSavedModel(savedModel: ModelState) {
+    savedModel.layers.forEach((layer, index) => {
+      this.layers[index].createFromSavedModel(layer);
+      console.log(`Created layer ${index + 1} from file`);
+    });
+  }
+
   getLayers(): Layer[] {
     return this.layers;
   }

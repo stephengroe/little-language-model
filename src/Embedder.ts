@@ -1,3 +1,4 @@
+import { trainingConfig } from './config';
 import { ModelState, NeuralNetwork } from './NeuralNetwork';
 import { shuffleArray, getCosineSimilarity } from './utils';
 
@@ -30,6 +31,17 @@ export class Embedder {
       this.vocabularySize,
     ];
     this.neuralNet = new NeuralNetwork(neuralNetLayers);
+  }
+
+  buildFromSavedModel(savedModel: ModelState, vocabularySize: number) {
+    const neuralNetLayers = savedModel.layers.map((layer) => {
+      return layer.weights.length;
+    });
+    // Add input layer
+    neuralNetLayers.unshift(vocabularySize);
+    this.neuralNet = new NeuralNetwork(neuralNetLayers);
+
+    this.neuralNet.buildFromSavedModel(savedModel);
   }
 
   // Train
@@ -178,13 +190,9 @@ export class Embedder {
       return [token, similarity];
     });
 
-    console.log(similarities);
-
     const nearesetNeighbors: number[] = similarities
       .sort((a, b) => a[1] - b[1])
       .map((val) => Number(val[0]));
-
-    console.log(nearesetNeighbors);
 
     return nearesetNeighbors.slice(0, n);
   }
