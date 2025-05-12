@@ -11,28 +11,29 @@ describe('Tokenizer module', () => {
 
   test('merges token pairs', () => {
     const corpus = [['t', 'e', 's', 't', '</w>']];
-    const vocab = new Map([
-      ['t', 2],
-      ['e', 1],
-      ['s', 1],
-      ['</w>', 1],
-    ]);
     const tokenizer = new Tokenizer(corpus);
-    tokenizer.mergeAllTokenPairs(1);
+    tokenizer.mergeAllTokenPairs(5);
     expect(tokenizer.getMergedText()).toEqual([['te', 's', 't', '</w>']]);
   });
 
   test('merges multiple token pairs in the same word', () => {
     const corpus = [['t', 'e', 's', 't', 'e', 'd', '</w>']];
-    const vocab = new Map([
-      ['t', 2],
-      ['e', 2],
-      ['s', 1],
-      ['d', 1],
-      ['</w>', 1],
-    ]);
     const tokenizer = new Tokenizer(corpus);
-    tokenizer.mergeAllTokenPairs(1);
+    tokenizer.mergeAllTokenPairs(6);
     expect(tokenizer.getMergedText()).toEqual([['te', 's', 'te', 'd', '</w>']]);
+  });
+
+  test('gets token from word', () => {
+    const corpus = [['t', 'e', 's', 't', 'e', 'd', '</w>']];
+    const tokenizer = new Tokenizer(corpus);
+    tokenizer.mergeAllTokenPairs(6);
+    expect(tokenizer.getTokenFromWord('s')).toEqual(2);
+  });
+
+  test('gets word from token', () => {
+    const corpus = [['t', 'e', 's', 't', 'e', 'd', '</w>']];
+    const tokenizer = new Tokenizer(corpus);
+    tokenizer.mergeAllTokenPairs(6);
+    expect(tokenizer.getWordFromToken(2)).toEqual('s');
   });
 });
