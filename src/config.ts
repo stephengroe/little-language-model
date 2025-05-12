@@ -6,7 +6,7 @@ export const trainingConfig = {
     epochs: 1,
     learningRate: 0.01,
     batchSize: 100,
-    sampleEmbeddings: 10, // Number of embeddings to sample in console
+    sampleEmbeddings: 5, // Number of embeddings to sample in console
     nearestNeighbors: 5,
     contextWindow: 2, // Word2Vec context words to include
     inputTextDirectory: './data/dickens/',

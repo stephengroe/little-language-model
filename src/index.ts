@@ -76,7 +76,7 @@ async function main() {
     const randToken = Math.floor(
       Math.random() * trainingConfig.embedding.vocabularySize
     );
-    console.log(` Closest words to ${tokenizer.getWordFromToken(randToken)}`);
+    console.log(` Closest words to '${tokenizer.getWordFromToken(randToken)}'`);
     const nearestNeighbors = embedder.getNearestNeighbors(
       randToken,
       trainingConfig.embedding.nearestNeighbors

@@ -50,13 +50,17 @@ export class Embedder {
       const totalBatches = Math.round(shuffledData.length / batchSize);
       let batchIndex = 0;
       while (batchIndex < shuffledData.length) {
-        console.log(
-          `Training batch ${Math.floor(batchIndex / batchSize) + 1}/${totalBatches}`
-        );
         const vectorizedTrainingData = await this.vectorizeBatch(
           shuffledData.slice(batchIndex, batchIndex + batchSize),
           this.vocabularySize
         );
+
+        // Log stats every 10 batches
+        if (batchIndex % 10 === 0) {
+          console.log(
+            `Training batch ${Math.floor(batchIndex / batchSize) + 1}/${totalBatches}`
+          );
+        }
 
         this.neuralNet.trainOnBatch(vectorizedTrainingData, learningRate);
 
@@ -174,9 +178,13 @@ export class Embedder {
       return [token, similarity];
     });
 
+    console.log(similarities);
+
     const nearesetNeighbors: number[] = similarities
       .sort((a, b) => a[1] - b[1])
       .map((val) => Number(val[0]));
+
+    console.log(nearesetNeighbors);
 
     return nearesetNeighbors.slice(0, n);
   }
