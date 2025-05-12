@@ -1,5 +1,5 @@
 import { ModelState, NeuralNetwork } from './NeuralNetwork';
-import { shuffleArray } from './utils';
+import { shuffleArray, getCosineSimilarity } from './utils';
 
 // Types
 export type TrainingSet = {
@@ -157,5 +157,27 @@ export class Embedder {
 
   getEmbeddings(): Record<number, number[]> {
     return this.embeddings;
+  }
+
+  getNearestNeighbors(targetToken: number, n: number): number[] {
+    if (!this.embeddings[targetToken]) {
+      throw new Error(`Invalid token (received ${targetToken})`);
+    }
+
+    const targetVector = this.embeddings[targetToken];
+
+    // Naive solution, computing all values then sorting
+    const similarities: [string, number][] = Object.entries(
+      this.embeddings
+    ).map(([token, vector]) => {
+      const similarity: number = getCosineSimilarity(targetVector, vector);
+      return [token, similarity];
+    });
+
+    const nearesetNeighbors: number[] = similarities
+      .sort((a, b) => a[1] - b[1])
+      .map((val) => Number(val[0]));
+
+    return nearesetNeighbors.slice(0, n);
   }
 }

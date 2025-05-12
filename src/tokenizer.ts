@@ -1,5 +1,5 @@
 export class Tokenizer {
-  private vocab: Map<string, number>;
+  private wordToToken: Map<string, number>;
   // Set up corpus for merging
   private texts: string[][];
   // Set up index (to store locations of pairs for merging)
@@ -7,6 +7,7 @@ export class Tokenizer {
   // Set up frequency map
   private frequencyMap: Map<string, number>;
   private tokenizedCorpus: number[];
+  private tokenToWord: Map<number, string>;
 
   constructor(texts: string[][]) {
     this.texts = JSON.parse(JSON.stringify(texts));
@@ -14,11 +15,14 @@ export class Tokenizer {
     this.frequencyMap = new Map<string, number>();
     this.tokenizedCorpus = [];
 
-    this.vocab = this.buildVocabularyFromCorpus(texts);
+    [this.wordToToken, this.tokenToWord] =
+      this.buildVocabularyFromCorpus(texts);
     this.indexAllWordTokens();
   }
 
-  buildVocabularyFromCorpus(corpus: string[][]): Map<string, number> {
+  buildVocabularyFromCorpus(
+    corpus: string[][]
+  ): [Map<string, number>, Map<number, string>] {
     const uniqueTokens = new Set<string>();
 
     for (const word of corpus) {
@@ -27,11 +31,15 @@ export class Tokenizer {
       }
     }
 
-    return new Map<string, number>(
-      Array.from(uniqueTokens).map((token, index) => {
-        return [token, index];
-      })
-    );
+    const wordToToken = new Map<string, number>();
+    const tokenToWord = new Map<number, string>();
+
+    Array.from(uniqueTokens).forEach((word, index) => {
+      wordToToken.set(word, index);
+      tokenToWord.set(index, word);
+    });
+
+    return [wordToToken, tokenToWord];
   }
 
   // Merge token pairs in a single word
@@ -96,7 +104,7 @@ export class Tokenizer {
   // Merge all token pairs
   mergeAllTokenPairs(vocabularySize: number): void {
     // Start count of all tokens
-    let totalTokens = this.vocab.size;
+    let totalTokens = this.wordToToken.size;
 
     // While we still have merges left, continue
     while (totalTokens < vocabularySize) {
@@ -107,7 +115,7 @@ export class Tokenizer {
       // Merge that pair
       this.mergeTokenPair(mostCommonPair);
       // Add to vocabulary
-      this.vocab.set(mostCommonPair, totalTokens);
+      this.wordToToken.set(mostCommonPair, totalTokens);
       // Increment merged tokens
       totalTokens += 1;
 
@@ -176,7 +184,7 @@ export class Tokenizer {
   tokenizeCorpus() {
     this.tokenizedCorpus = this.texts.flatMap((word: string[]) => {
       return word.map((token) => {
-        const foundToken = this.vocab.get(token) ?? -1;
+        const foundToken = this.wordToToken.get(token) ?? -1;
 
         // Error handling for tokens not found in vocabulary
         if (foundToken < 0) {
@@ -193,7 +201,21 @@ export class Tokenizer {
   }
 
   getVocabulary() {
-    return this.vocab;
+    return this.wordToToken;
+  }
+
+  getTokenFromWord(word: string) {
+    if (!this.wordToToken.has(word)) {
+      throw new Error(`Word '${word}' does not exist in vocabulary`);
+    }
+    return this.wordToToken.get(word);
+  }
+
+  getWordFromToken(token: number) {
+    if (!this.tokenToWord.has(token)) {
+      throw new Error(`Token #${token} does not exist in vocabulary`);
+    }
+    return this.tokenToWord.get(token);
   }
 
   getMergedText() {

@@ -56,3 +56,30 @@ export function shuffleArray<T>(arr: T[]): T[] {
   }
   return result;
 }
+
+// Get cosine similarity
+export function getCosineSimilarity(a: number[], b: number[]): number {
+  if (a.length !== b.length) {
+    throw new Error(
+      `Vectors must be of same length (received ${a.length} and ${b.length})`
+    );
+  }
+
+  const dotProduct = a.reduce((acc, cur, index) => {
+    return acc + cur * b[index];
+  }, 0);
+
+  const sizeA = Math.sqrt(
+    a.reduce((acc, cur) => {
+      return acc + Math.pow(cur, 2);
+    }, 0)
+  );
+
+  const sizeB = Math.sqrt(
+    b.reduce((acc, cur) => {
+      return acc + Math.pow(cur, 2);
+    }, 0)
+  );
+
+  return dotProduct / (sizeA * sizeB);
+}
