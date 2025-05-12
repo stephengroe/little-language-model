@@ -191,7 +191,7 @@ export class Embedder {
     });
 
     const nearesetNeighbors: number[] = similarities
-      .sort((a, b) => a[1] - b[1])
+      .sort((a, b) => b[1] - a[1])
       .map((val) => Number(val[0]));
 
     return nearesetNeighbors.slice(0, n);
