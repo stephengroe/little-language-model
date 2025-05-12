@@ -116,6 +116,7 @@ export class Tokenizer {
       this.mergeTokenPair(mostCommonPair);
       // Add to vocabulary
       this.wordToToken.set(mostCommonPair, totalTokens);
+      this.tokenToWord.set(totalTokens, mostCommonPair);
       // Increment merged tokens
       totalTokens += 1;
 
