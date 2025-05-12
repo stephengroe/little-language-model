@@ -23,7 +23,11 @@ async function main() {
 
   // Save config
   console.log(`Saving config...`);
-  await saveFile(filePath, `config.json`, JSON.stringify(trainingConfig));
+  await saveFile(
+    filePath,
+    `config.json`,
+    JSON.stringify(trainingConfig, null, 2)
+  );
 
   // Build corpus
   console.log(
@@ -44,7 +48,7 @@ async function main() {
   await saveFile(
     filePath,
     `tokens.json`,
-    JSON.stringify(Object.fromEntries(tokenizer.getVocabulary()))
+    JSON.stringify(Object.fromEntries(tokenizer.getVocabulary()), null, 2)
   );
 
   // Generate embeddings
@@ -55,7 +59,7 @@ async function main() {
     tokenizer.getTokenizedCorpus()
   );
 
-  /* FOR TRAINING EMBEDDINGS
+  /* FOR TRAINING EMBEDDINGS */
   console.log(`Training embeddings...`);
   const embeddingModel = await embedder.train(
     trainingConfig.embedding.batchSize,
@@ -63,21 +67,26 @@ async function main() {
     trainingConfig.embedding.learningRate,
     trainingConfig.embedding.epochs
   );
-  await saveFile(filePath, `model-state.json`, JSON.stringify(embeddingModel));
-  */
+  await saveFile(
+    filePath,
+    `model-state.json`,
+    JSON.stringify(embeddingModel, null, 2)
+  );
 
+  /* FOR GENERATING FROM SAVED MODEL
   const savedModel = await loadFile(filePath, `model-state.json`);
   embedder.buildFromSavedModel(
     JSON.parse(savedModel),
     trainingConfig.embedding.vocabularySize
   );
+  */
 
   console.log(`Saving embeddings...`);
   const embeddings = embedder.buildEmbeddings();
   await saveFile(
     filePath,
     `embeddings.json`,
-    JSON.stringify(embedder.getEmbeddings())
+    JSON.stringify(embedder.getEmbeddings(), null, 2)
   );
 
   // Print nearest neighbors of sample embeddings
