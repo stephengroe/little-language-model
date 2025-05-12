@@ -45,13 +45,13 @@ export class Embedder {
   }
 
   // Train
-  async train(
+  train(
     batchSize: number,
     contextWindow: number,
     learningRate: number,
     epochs: number
-  ): Promise<ModelState> {
-    const trainingData = await this.generateTrainingData(contextWindow);
+  ): ModelState {
+    const trainingData = this.generateTrainingData(contextWindow);
 
     for (let i = 0; i < epochs; i++) {
       console.log(`\nEpoch #${i + 1}`);
@@ -62,7 +62,7 @@ export class Embedder {
       const totalBatches = Math.round(shuffledData.length / batchSize);
       let batchIndex = 0;
       while (batchIndex < shuffledData.length) {
-        const vectorizedTrainingData = await this.vectorizeBatch(
+        const vectorizedTrainingData = this.vectorizeBatch(
           shuffledData.slice(batchIndex, batchIndex + batchSize),
           this.vocabularySize
         );
@@ -80,7 +80,7 @@ export class Embedder {
       }
     }
 
-    return await this.neuralNet.getModelState();
+    return this.neuralNet.getModelState();
   }
 
   // Build CBOW training groups
@@ -156,7 +156,7 @@ export class Embedder {
     return { input: resultInput, target: resultTarget };
   }
 
-  async buildEmbeddings() {
+  buildEmbeddings() {
     // Clear any existing embeddings
     this.embeddings = {};
     const embeddings: Record<number, number[]> = {};

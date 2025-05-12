@@ -43,8 +43,8 @@ async function main() {
   // Generate tokens
   console.log(`Generating tokens...`);
   const tokenizer = new Tokenizer(corpus.getTexts());
-  await tokenizer.mergeAllTokenPairs(trainingConfig.embedding.vocabularySize);
-  await tokenizer.tokenizeCorpus();
+  tokenizer.mergeAllTokenPairs(trainingConfig.embedding.vocabularySize);
+  tokenizer.tokenizeCorpus();
   await saveFile(
     filePath,
     `tokens.json`,
@@ -53,7 +53,7 @@ async function main() {
 
   // Generate embeddings
   console.log(`Initializing embeddings...`);
-  const embedder = await new Embedder(
+  const embedder = new Embedder(
     tokenizer.getVocabulary().size,
     trainingConfig.embedding.vectorSize,
     tokenizer.getTokenizedCorpus()
@@ -61,7 +61,7 @@ async function main() {
 
   /* FOR TRAINING EMBEDDINGS */
   console.log(`Training embeddings...`);
-  const embeddingModel = await embedder.train(
+  const embeddingModel = embedder.train(
     trainingConfig.embedding.batchSize,
     trainingConfig.embedding.contextWindow,
     trainingConfig.embedding.learningRate,
