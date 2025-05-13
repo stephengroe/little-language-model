@@ -26,22 +26,10 @@ export class Node {
   }
 
   getDotProduct(inputs: number[]): number {
-    // Multiple inputs by weights, add bias, and sum to a single number
-    return (
-      inputs.reduce((total, input, index) => {
-        return (total += input * this.weights[index]);
-      }) + this.bias
-    );
-  }
-
-  applyActivation(x: number): number {
-    // Using ReLU
-    return Math.max(0, x);
-  }
-
-  // ReLU
-  activationDerivative(x: number): number {
-    return x > 0 ? 1 : 0;
+    // Multiply inputs by weights
+    return inputs.reduce((total, input, index) => {
+      return (total += input * this.weights[index]);
+    });
   }
 
   getOutput(inputs: number[]): number {
@@ -50,17 +38,12 @@ export class Node {
       this.savedInputs[i] = inputs[i];
     }
 
-    const dotProduct = this.getDotProduct(inputs);
-    const output = this.applyActivation(dotProduct);
-
-    this.savedOutput = output;
-    return output;
+    return this.getDotProduct(inputs) + this.bias;
   }
 
   calculateGradients(lossGradient: number): number[] {
     // Get derivative of activation function
-    const nodeLossGradient =
-      lossGradient * this.activationDerivative(this.savedOutput);
+    const nodeLossGradient = lossGradient * this.savedOutput;
 
     // Store updated weights
     for (let i = 0; i < this.weightGradients.length; i++) {

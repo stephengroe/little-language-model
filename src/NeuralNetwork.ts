@@ -1,4 +1,7 @@
 import { Layer } from './Layer';
+import { ActivationFunction } from './ActivationFunction/ActivationFunction';
+import { ReLU } from './ActivationFunction/ReLU';
+import { Identity } from './ActivationFunction/Identity';
 
 // Types
 export type ModelState = {
@@ -14,11 +17,19 @@ export class NeuralNetwork {
   constructor(layerSizes: number[]) {
     this.layers = [];
 
-    // Skip first (input) layer
+    // Skip input layer
     for (let i = 1; i < layerSizes.length; i++) {
-      // Layer size (for number of nodes) and previous size (for node weights)
-      const newLayer = new Layer(layerSizes[i], layerSizes[i - 1]);
-      this.layers.push(newLayer);
+      if (i === layerSizes.length) {
+        // Use identity function for output layer
+        this.layers.push(
+          new Layer(layerSizes[i], layerSizes[i - 1], new Identity())
+        );
+      } else {
+        // Use ReLU for hidden layers
+        this.layers.push(
+          new Layer(layerSizes[i], layerSizes[i - 1], new ReLU())
+        );
+      }
     }
   }
 
@@ -83,30 +94,14 @@ export class NeuralNetwork {
       result = layer.forward(result);
     }
 
-    const adjustedResult = this.softmax(result);
-
     return result;
   }
 
   getLossGradient(predicted: number[], expected: number[]): number[] {
     return predicted.map((prediction, index) => {
-      // Calculate derivative of mean squared error
+      // Calculate derivative
       return prediction - expected[index];
     });
-  }
-
-  softmax(input: number[], temperature: number = 1): number[] {
-    // Prevent divide by zero errors
-    const safeTemp = Math.max(temperature, 1e-6);
-    // Get max to subtract for numerical stability
-    const max = Math.max(...input);
-
-    const adjustedInput = input.map((weight) =>
-      Math.exp((weight - max) / safeTemp)
-    );
-    const denominator = adjustedInput.reduce((acc, curr) => (acc += curr), 0);
-
-    return adjustedInput.map((inputNum) => inputNum / denominator);
   }
 
   truncateVector(vector: number[]): number[] {

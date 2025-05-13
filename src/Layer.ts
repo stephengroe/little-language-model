@@ -1,9 +1,15 @@
 import { Node } from './Node';
+import { ActivationFunction } from './ActivationFunction/ActivationFunction';
 
 export class Layer {
-  private nodes: Node[] = [];
+  private nodes: Node[];
+  private activationFn: ActivationFunction;
 
-  constructor(layerSize: number, inputSize: number) {
+  constructor(
+    layerSize: number,
+    inputSize: number,
+    activationFn: ActivationFunction
+  ) {
     // Validate input size
     if (inputSize < 1) {
       throw new Error(`Input size must be greater than one (got ${inputSize})`);
@@ -11,6 +17,7 @@ export class Layer {
 
     // Instantiate nodes for this layer with weights based on previous layer
     this.nodes = Array.from({ length: layerSize }, () => new Node(inputSize));
+    this.activationFn = activationFn;
   }
 
   forward(input: number[]): number[] {
@@ -20,12 +27,13 @@ export class Layer {
 
     return this.nodes.map((node, index) => {
       const output = node.getOutput(input);
+      const activatedOutput = this.activationFn.apply(output);
 
-      if (Number.isNaN(output)) {
-        throw new Error(`Node #${index} output is NaN`);
+      if (Number.isNaN(activatedOutput)) {
+        throw new Error(`Node #${index} activated output is NaN`);
       }
 
-      return output;
+      return activatedOutput;
     });
   }
 
