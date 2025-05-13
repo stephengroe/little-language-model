@@ -45,7 +45,7 @@ export class NeuralNetwork {
   }
 
   train(input: number[], expected: number[], learningRate: number) {
-    const predicted = this.predict(input);
+    const predicted = this.softmax(this.predict(input));
     const loss = this.loss(predicted, expected);
     const lossGradient = this.getLossGradient(predicted, expected);
 
@@ -134,5 +134,20 @@ export class NeuralNetwork {
     }
 
     return result;
+  }
+
+  // Softmax
+  softmax(input: number[], temperature: number = 1): number[] {
+    // Prevent divide by zero errors
+    const safeTemp = Math.max(temperature, 0e-6);
+    // Subtract max for numerical stability
+    const max = Math.max(...input);
+
+    const adjustedInput = input.map((weight) =>
+      Math.exp((weight - max) / safeTemp)
+    );
+    const denominator = adjustedInput.reduce((acc, curr) => (acc += curr), 0);
+
+    return adjustedInput.map((inputNum) => inputNum / denominator);
   }
 }
