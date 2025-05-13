@@ -59,7 +59,7 @@ export class Embedder {
       // Shuffle data for new epoch
       const shuffledData = shuffleArray(trainingData);
 
-      const totalBatches = Math.round(shuffledData.length / batchSize);
+      const totalBatches = Math.ceil(shuffledData.length / batchSize);
       let batchIndex = 0;
       while (batchIndex < shuffledData.length) {
         const vectorizedTrainingData = this.vectorizeBatch(
@@ -68,9 +68,9 @@ export class Embedder {
         );
 
         // Log stats every 10 batches
-        if (batchIndex % 10 === 0) {
+        if (batchIndex % (10 * batchSize) === 0) {
           console.log(
-            `Training batch ${Math.floor(batchIndex / batchSize) + 1}/${totalBatches}`
+            `Training batch ${Math.floor(batchIndex / batchSize)}/${totalBatches}`
           );
         }
 
