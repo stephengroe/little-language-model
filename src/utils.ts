@@ -83,3 +83,8 @@ export function getCosineSimilarity(a: number[], b: number[]): number {
 
   return dotProduct / (sizeA * sizeB);
 }
+
+// Round a large decimal
+export function round(input: number, places: number): number {
+  return Math.round(input * 10 ** places) / 10 ** places;
+}
