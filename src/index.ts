@@ -58,6 +58,7 @@ async function main() {
     trainingConfig.embedding.vectorSize,
     tokenizer.getTokenizedCorpus()
   );
+  await embedder.saveNeuralNet();
 
   /* FOR TRAINING EMBEDDINGS */
   console.log(`Training embeddings...`);
@@ -94,7 +95,9 @@ async function main() {
 
   for (let i = 0; i < trainingConfig.embedding.sampleEmbeddings; i++) {
     const randToken = Math.floor(
-      Math.random() * trainingConfig.embedding.vocabularySize
+      // Focus on final 20% of vocabulary (more likely to be full words)
+      Math.random() * (trainingConfig.embedding.vocabularySize * 0.9) +
+        trainingConfig.embedding.vocabularySize * 0.1
     );
     console.log(` Closest words to '${tokenizer.getWordFromToken(randToken)}'`);
     const nearestNeighbors = embedder.getNearestNeighbors(
