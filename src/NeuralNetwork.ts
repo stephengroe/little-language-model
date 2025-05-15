@@ -1,5 +1,4 @@
 import { Layer } from './Layer';
-import { ActivationFunction } from './ActivationFunction/ActivationFunction';
 import { ReLU } from './ActivationFunction/ReLU';
 import { Identity } from './ActivationFunction/Identity';
 
@@ -19,7 +18,7 @@ export class NeuralNetwork {
 
     // Skip input layer
     for (let i = 1; i < layerSizes.length; i++) {
-      if (i === layerSizes.length) {
+      if (i === layerSizes.length - 1) {
         // Use identity function for output layer
         this.layers.push(
           new Layer(layerSizes[i], layerSizes[i - 1], new Identity())

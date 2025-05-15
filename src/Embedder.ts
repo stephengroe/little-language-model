@@ -1,6 +1,7 @@
 import { trainingConfig } from './config';
 import { ModelState, NeuralNetwork } from './NeuralNetwork';
 import { shuffleArray, getCosineSimilarity } from './utils';
+import { saveFile } from './utils';
 
 // Types
 export type TrainingSet = {
@@ -31,6 +32,14 @@ export class Embedder {
       this.vocabularySize,
     ];
     this.neuralNet = new NeuralNetwork(neuralNetLayers);
+  }
+
+  async saveNeuralNet() {
+    await saveFile(
+      './',
+      'initial-neural-net.json',
+      JSON.stringify(this.neuralNet.getModelState(), null, 2)
+    );
   }
 
   buildFromSavedModel(savedModel: ModelState, vocabularySize: number) {
@@ -160,10 +169,11 @@ export class Embedder {
     // Clear any existing embeddings
     this.embeddings = {};
     const embeddings: Record<number, number[]> = {};
+    const lastLayer = this.neuralNet.getLayers().length - 1;
 
     for (let i = 0; i < this.vocabularySize; i++) {
       const vocabOneHot = this.oneHot(i, this.vocabularySize);
-      const vector = this.neuralNet.forwardToLayer(vocabOneHot, 0);
+      const vector = this.neuralNet.forwardToLayer(vocabOneHot, lastLayer);
 
       embeddings[i] = vector;
     }
