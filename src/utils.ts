@@ -57,6 +57,20 @@ export function shuffleArray<T>(arr: T[]): T[] {
   return result;
 }
 
+export function softmax(input: number[], temperature: number = 1): number[] {
+  // Prevent divide by zero errors
+  const safeTemp = Math.max(temperature, 0e-6);
+  // Subtract max for numerical stability
+  const max = Math.max(...input);
+
+  const adjustedInput = input.map((weight) =>
+    Math.exp((weight - max) / safeTemp)
+  );
+  const denominator = adjustedInput.reduce((acc, curr) => (acc += curr), 0);
+
+  return adjustedInput.map((inputNum) => inputNum / denominator);
+}
+
 // Get cosine similarity
 export function getCosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length) {
