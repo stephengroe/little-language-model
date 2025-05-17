@@ -8,6 +8,6 @@ export class Identity implements ActivationFunction {
   }
 
   derivative(input: number): number {
-    return input;
+    return 1;
   }
 }
