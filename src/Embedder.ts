@@ -67,26 +67,21 @@ export class Embedder {
 
       // Shuffle data for new epoch
       const shuffledData = shuffleArray(trainingData);
+      const vectorData = shuffledData.map((data) => {
+        return this.vectorizeTrainingData(data, this.vocabularySize);
+      });
 
-      const totalBatches = Math.ceil(shuffledData.length / batchSize);
-      let batchIndex = 0;
-      while (batchIndex < shuffledData.length) {
-        const vectorizedTrainingData = this.vectorizeBatch(
-          shuffledData.slice(batchIndex, batchIndex + batchSize),
-          this.vocabularySize
-        );
+      const tenPercent = Math.ceil(vectorData.length / 10);
+      let percentDone = 0;
 
-        // Log stats every 10 batches
-        if (batchIndex % (10 * batchSize) === 0) {
-          console.log(
-            `Training batch ${Math.floor(batchIndex / batchSize)}/${totalBatches}`
-          );
+      vectorData.forEach(({ input, target }, i) => {
+        const loss = this.neuralNet.train(input, target, learningRate);
+
+        if (i % tenPercent === 0) {
+          percentDone += 10;
+          console.log(` Trained ${percentDone}% | Loss: ${loss}`);
         }
-
-        this.neuralNet.trainOnBatch(vectorizedTrainingData, learningRate);
-
-        batchIndex += batchSize;
-      }
+      });
     }
 
     return this.neuralNet.getModelState();
