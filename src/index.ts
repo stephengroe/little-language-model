@@ -11,15 +11,15 @@ async function main() {
   console.time(`Generate project`);
   // Create timestamp to save output
   const timestamp = `${formatTimestampAsISO(new Date())}`;
-  const filePath = `${trainingConfig.outputFolder}/`; //-${timestamp}/`;
+  const filePath = `${trainingConfig.outputFolder}-${timestamp}/`;
 
   // Create new folder to save all output
-  // try {
-  //   await mkdir(filePath);
-  // } catch (err) {
-  //   console.error(`Unable to create directory ${filePath}: ${err}`);
-  //   return;
-  // }
+  try {
+    await mkdir(filePath);
+  } catch (err) {
+    console.error(`Unable to create directory ${filePath}: ${err}`);
+    return;
+  }
 
   // Save config
   console.log(`Saving config...`);
@@ -87,18 +87,20 @@ async function main() {
   await saveFile(
     filePath,
     `embeddings.json`,
-    JSON.stringify(embedder.getEmbeddings(), null, 2)
+    JSON.stringify(embedder.getEmbeddings(), null)
   );
 
   // Print nearest neighbors of sample embeddings
   console.log(`Sampling embeddings...`);
 
+  // Get actual tokens in corpus (as opposed to unused pairs)
+  const uniqueWords = Array.from(
+    new Set<number>(tokenizer.getTokenizedCorpus())
+  );
+
   for (let i = 0; i < trainingConfig.embedding.sampleEmbeddings; i++) {
-    const randToken = Math.floor(
-      // Focus on final 20% of vocabulary (more likely to be full words)
-      Math.random() * (trainingConfig.embedding.vocabularySize * 0.9) +
-        trainingConfig.embedding.vocabularySize * 0.1
-    );
+    const randIndex = Math.floor(Math.random() * uniqueWords.length);
+    const randToken = uniqueWords[randIndex];
     console.log(` Closest words to '${tokenizer.getWordFromToken(randToken)}'`);
     const nearestNeighbors = embedder.getNearestNeighbors(
       randToken,

@@ -1,6 +1,8 @@
 import { Layer } from './Layer';
+import { ActivationFunction } from './ActivationFunction/ActivationFunction';
 import { ReLU } from './ActivationFunction/ReLU';
 import { Identity } from './ActivationFunction/Identity';
+import { softmax, round } from './utils';
 
 // Types
 export type ModelState = {
@@ -18,106 +20,62 @@ export class NeuralNetwork {
 
     // Skip input layer
     for (let i = 1; i < layerSizes.length; i++) {
+      let layer: Layer;
+
       if (i === layerSizes.length - 1) {
         // Use identity function for output layer
-        this.layers.push(
-          new Layer(layerSizes[i], layerSizes[i - 1], new Identity())
-        );
+        layer = new Layer(layerSizes[i], layerSizes[i - 1], new Identity());
       } else {
         // Use ReLU for hidden layers
-        this.layers.push(
-          new Layer(layerSizes[i], layerSizes[i - 1], new ReLU())
-        );
+        layer = new Layer(layerSizes[i], layerSizes[i - 1], new ReLU());
       }
+
+      this.layers.push(layer);
     }
   }
 
-  buildFromSavedModel(savedModel: ModelState) {
-    savedModel.layers.forEach((layer, index) => {
-      this.layers[index].createFromSavedModel(layer);
-      console.log(`Created layer ${index + 1} from file`);
-    });
-  }
-
-  getLayers(): Layer[] {
-    return this.layers;
-  }
-
-  train(input: number[], expected: number[], learningRate: number) {
-    const predicted = this.softmax(this.predict(input));
-    const loss = this.loss(predicted, expected);
+  train(input: number[], expected: number[], learningRate: number): number {
+    const predicted = this.predict(input);
+    const targetIndex = expected.findIndex((n) => n === 1);
+    const loss = this.loss(predicted, targetIndex);
     const lossGradient = this.getLossGradient(predicted, expected);
 
+    // console.log(` Input: ${input}`);
+    // console.log(` Pred.: ${predicted.map((n) => round(n))}`);
+
     this.backward(lossGradient, learningRate);
+
+    return loss;
   }
 
-  trainOnBatch(
-    batch: { input: number[][]; target: number[][] },
-    learningRate: number
-  ) {
-    for (let i = 0; i < batch.input.length; i++) {
-      this.train(batch.input[i], batch.target[i], learningRate);
-    }
-
-    // Apply gradients after processing batch
-    for (const layer of this.layers) {
-      layer.applyGradients(learningRate, batch.input.length);
-    }
-  }
-
-  // Back propogation
   backward(lossGradient: number[], learningRate: number) {
-    // Move backward across layers
     for (let i = this.layers.length - 1; i >= 0; i--) {
-      lossGradient = this.layers[i].calculateGradients(lossGradient);
+      lossGradient = this.layers[i].backward(lossGradient, learningRate);
     }
   }
 
   // Cross entropy (softmax prediction, one-hot expected)
-  loss(predicted: number[], expected: number[]): number {
-    // Throw error if predicted and expected arrays don't match up
-    if (predicted.length !== expected.length) {
-      throw new Error(`Predicted and expected must be of same length`);
-    }
-
+  loss(predicted: number[], expectedIndex: number): number {
     const epsilon = 1e-15; // to prevent log(0) error
-    return expected.reduce((sum, actual, i) => {
-      return sum - actual * Math.log(Math.max(predicted[i], epsilon));
-    });
+    const prob = Math.max(predicted[expectedIndex], epsilon);
+    return -Math.log(prob);
   }
 
   predict(input: number[]): number[] {
-    let result = input.slice();
+    let result = input;
 
     for (const layer of this.layers) {
       result = layer.forward(result);
     }
 
-    return result;
+    return softmax(result);
   }
 
   getLossGradient(predicted: number[], expected: number[]): number[] {
-    return predicted.map((prediction, index) => {
-      // Calculate derivative
-      return prediction - expected[index];
-    });
-  }
-
-  truncateVector(vector: number[]): number[] {
-    return vector.map((num) => Math.round(num * 100) / 100);
-  }
-
-  getModelState(): ModelState {
-    const layers = [];
-
-    for (const layer of this.layers) {
-      const result = layers.push({
-        weights: layer.getWeights(),
-        biases: layer.getBiases(),
-      });
-    }
-
-    return { layers: layers };
+    let grad = predicted.slice();
+    let targetIndex = expected.findIndex((n) => n === 1);
+    grad[targetIndex] -= 1;
+    return grad;
   }
 
   // Get output at layer X
@@ -135,18 +93,27 @@ export class NeuralNetwork {
     return result;
   }
 
-  // Softmax
-  softmax(input: number[], temperature: number = 1): number[] {
-    // Prevent divide by zero errors
-    const safeTemp = Math.max(temperature, 0e-6);
-    // Subtract max for numerical stability
-    const max = Math.max(...input);
+  getModelState(): ModelState {
+    const layers = [];
 
-    const adjustedInput = input.map((weight) =>
-      Math.exp((weight - max) / safeTemp)
-    );
-    const denominator = adjustedInput.reduce((acc, curr) => (acc += curr), 0);
+    for (const layer of this.layers) {
+      const result = layers.push({
+        weights: layer.getWeights(),
+        biases: layer.getBiases(),
+      });
+    }
 
-    return adjustedInput.map((inputNum) => inputNum / denominator);
+    return { layers: layers };
+  }
+
+  buildFromSavedModel(savedModel: ModelState) {
+    savedModel.layers.forEach((layer, index) => {
+      this.layers[index].createFromSavedModel(layer);
+      console.log(`Created layer ${index + 1} from file`);
+    });
+  }
+
+  getLayers(): Layer[] {
+    return this.layers;
   }
 }

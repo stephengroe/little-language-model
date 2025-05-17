@@ -3,21 +3,22 @@ import { ActivationFunction } from './ActivationFunction/ActivationFunction';
 
 export class Layer {
   private nodes: Node[];
-  private activationFn: ActivationFunction;
 
   constructor(
-    layerSize: number,
+    layerDepth: number,
     inputSize: number,
     activationFn: ActivationFunction
   ) {
-    // Validate input size
     if (inputSize < 1) {
-      throw new Error(`Input size must be greater than one (got ${inputSize})`);
+      throw new Error(`Input size must be one or more (got ${inputSize})`);
     }
 
-    // Instantiate nodes for this layer with weights based on previous layer
-    this.nodes = Array.from({ length: layerSize }, () => new Node(inputSize));
-    this.activationFn = activationFn;
+    this.nodes = [];
+
+    for (let i = 0; i < layerDepth; i++) {
+      const node = new Node(inputSize, activationFn);
+      this.nodes.push(node);
+    }
   }
 
   forward(input: number[]): number[] {
@@ -25,38 +26,21 @@ export class Layer {
       throw new Error(`Input length does not match weights`);
     }
 
-    return this.nodes.map((node, index) => {
-      const output = node.getOutput(input);
-      const activatedOutput = this.activationFn.apply(output);
-
-      if (Number.isNaN(activatedOutput)) {
-        throw new Error(`Node #${index} activated output is NaN`);
-      }
-
-      return activatedOutput;
-    });
+    return this.nodes.map((node) => node.forward(input));
   }
 
-  calculateGradients(lossGradient: number[]): number[] {
+  backward(lossGradient: number[], learningRate: number): number[] {
     let accumulatedGradient = Array(this.nodes[0].getWeights().length).fill(0);
 
-    // Update weights and bias at each node
     for (let i = 0; i < this.nodes.length; i++) {
-      const contrib = this.nodes[i].calculateGradients(lossGradient[i]);
+      const contrib = this.nodes[i].backward(lossGradient[i], learningRate);
 
-      // Sum all changes
       for (let j = 0; j < accumulatedGradient.length; j++) {
         accumulatedGradient[j] += contrib[j];
       }
     }
 
     return accumulatedGradient;
-  }
-
-  applyGradients(learningRate: number, batchSize: number) {
-    for (const node of this.nodes) {
-      node.applyGradients(learningRate, batchSize);
-    }
   }
 
   getNodes(): Node[] {

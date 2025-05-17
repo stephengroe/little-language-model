@@ -3,7 +3,7 @@ export const trainingConfig = {
   embedding: {
     vocabularySize: 5_000,
     vectorSize: 64,
-    epochs: 1,
+    epochs: 10,
     learningRate: 0.01,
     batchSize: 100,
     sampleEmbeddings: 10, // Number of embeddings to sample in console
@@ -11,6 +11,7 @@ export const trainingConfig = {
     contextWindow: 2, // Word2Vec context words to include
     inputTextDirectory: './data/dickens/',
     inputTexts: [
+      // 'sample.txt',
       'a-christmas-carol.txt',
       // 'american-notes.txt',
       // 'bleak-house.txt',

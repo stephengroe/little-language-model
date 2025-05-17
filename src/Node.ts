@@ -1,72 +1,55 @@
+import { ActivationFunction } from './ActivationFunction/ActivationFunction';
+
 export class Node {
   private weights: number[];
-  private weightGradients: number[];
   private bias: number;
-  private biasGradient: number;
-  private savedInputs: number[];
-  private savedOutput: number;
+  private inputs: number[];
+  private z: number;
+  private activation: ActivationFunction;
 
-  constructor(inputSize: number) {
-    // Validate input
-    if (inputSize <= 1) {
-      throw new Error(`Input length must be greater than 1 (got ${inputSize})`);
+  constructor(inputSize: number, activation: ActivationFunction) {
+    if (inputSize < 1) {
+      throw new Error(`Input length must one or more (got ${inputSize})`);
     }
 
-    this.weights = Array.from({ length: inputSize }, () => {
-      // He uniform initialization
-      return (
-        Math.random() * 2 * Math.sqrt(2 / inputSize) - Math.sqrt(2 / inputSize)
-      );
-    });
-    this.weightGradients = Array(inputSize).fill(0);
-    this.bias = Math.random() * 0.2 - 0.1; // In range [-0.1, +0.1]
-    this.biasGradient = 0;
-    this.savedInputs = Array(inputSize).fill(0);
-    this.savedOutput = 0;
+    this.weights = Array.from({ length: inputSize }, () => Math.random() - 0.5);
+    this.bias = 0;
+    this.z = 0;
+    this.activation = activation;
+    this.inputs = [];
   }
 
-  getDotProduct(inputs: number[]): number {
-    // Multiply inputs by weights
-    return inputs.reduce((total, input, index) => {
-      return (total += input * this.weights[index]);
-    });
-  }
+  forward(input: number[]): number {
+    this.inputs = input.slice();
+    const dot = input.reduce((acc, cur, index) => {
+      return acc + cur * this.weights[index];
+    }, 0);
+    const z = dot + this.bias;
+    this.z = z;
+    const result = this.activation.apply(z);
 
-  getOutput(inputs: number[]): number {
-    // Save inputs
-    for (let i = 0; i < inputs.length; i++) {
-      this.savedInputs[i] = inputs[i];
+    if (Number.isNaN(result)) {
+      throw new Error(`Output of node is NaN
+        input: ${input}
+        weights: ${this.weights}
+        dot: ${dot}
+        z: ${z}`);
     }
 
-    return this.getDotProduct(inputs) + this.bias;
+    return result;
   }
 
-  calculateGradients(lossGradient: number): number[] {
-    // Get derivative of activation function
-    const nodeLossGradient = lossGradient * this.savedOutput;
+  backward(lossGradient: number, learningRate: number): number[] {
+    const delta = lossGradient * this.activation.derivative(this.z);
 
-    // Store updated weights
-    for (let i = 0; i < this.weightGradients.length; i++) {
-      this.weightGradients[i] += nodeLossGradient * this.savedInputs[i];
-    }
-
-    // Store updated bias
-    this.biasGradient += nodeLossGradient;
-
-    // Return new gradient
-    return this.weights.map((weight, index) => weight * lossGradient);
-  }
-
-  applyGradients(learningRate: number, batchSize: number) {
     for (let i = 0; i < this.weights.length; i++) {
-      const avgGradient = this.weightGradients[i] / batchSize;
-      this.weights[i] -= avgGradient * learningRate;
-      this.weightGradients[i] = 0; // reset for next batch
+      const gradient = delta * this.inputs[i];
+      this.weights[i] -= learningRate * gradient;
     }
 
-    const avgBiasGradient = this.biasGradient / batchSize;
-    this.bias -= avgBiasGradient * learningRate;
-    this.biasGradient = 0;
+    this.bias -= learningRate * delta;
+
+    return this.weights.map((weight) => weight * delta);
   }
 
   getWeights(): number[] {
