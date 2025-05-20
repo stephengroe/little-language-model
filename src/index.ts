@@ -58,7 +58,6 @@ async function main() {
     trainingConfig.embedding.vectorSize,
     tokenizer.getTokenizedCorpus()
   );
-  await embedder.saveNeuralNet();
 
   /* FOR TRAINING EMBEDDINGS */
   console.log(`Training embeddings...`);
@@ -93,17 +92,26 @@ async function main() {
   // Print nearest neighbors of sample embeddings
   console.log(`Sampling embeddings...`);
 
-  // Get actual tokens in corpus (as opposed to unused pairs)
+  const sampleTokens: number[] = trainingConfig.embedding.sampledEmbeddings.map(
+    (word) => {
+      return tokenizer.getTokenFromWord(word);
+    }
+  );
+
+  // Sample random tokens from corpus
   const uniqueWords = Array.from(
     new Set<number>(tokenizer.getTokenizedCorpus())
   );
-
-  for (let i = 0; i < trainingConfig.embedding.sampleEmbeddings; i++) {
+  for (let i = 0; i < trainingConfig.embedding.randomSamples; i++) {
     const randIndex = Math.floor(Math.random() * uniqueWords.length);
     const randToken = uniqueWords[randIndex];
-    console.log(` Closest words to '${tokenizer.getWordFromToken(randToken)}'`);
-    const nearestNeighbors = embedder.getNearestNeighbors(
-      randToken,
+    sampleTokens.push(randToken);
+  }
+
+  for (const sampleToken of sampleTokens) {
+    console.log(` Nearest to '${tokenizer.getWordFromToken(sampleToken)}'`);
+    const nearestNeighbors = embedder.findNearest(
+      sampleToken,
       trainingConfig.embedding.nearestNeighbors
     );
     nearestNeighbors.forEach((token, index) => {
