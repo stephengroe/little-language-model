@@ -1,6 +1,6 @@
 import { trainingConfig } from './config';
 import { ModelState, NeuralNetwork } from './NeuralNetwork';
-import { shuffleArray, getCosineSimilarity } from './utils';
+import { shuffleArray, getCosineSimilarity, round } from './utils';
 import { saveFile } from './utils';
 
 // Types
@@ -62,26 +62,36 @@ export class Embedder {
   ): ModelState {
     const trainingData = this.generateTrainingData(contextWindow);
 
+    // Epochs
     for (let i = 0; i < epochs; i++) {
       console.log(`\nEpoch #${i + 1}`);
+      const epochLoss: number[] = [];
 
-      // Shuffle data for new epoch
       const shuffledData = shuffleArray(trainingData);
-      const vectorData = shuffledData.map((data) => {
-        return this.vectorizeTrainingData(data, this.vocabularySize);
-      });
+      const tenPercent = Math.ceil(shuffledData.length / 10);
 
-      const tenPercent = Math.ceil(vectorData.length / 10);
-      let percentDone = 0;
+      // Batches
+      for (let j = 0; j < shuffledData.length; j += batchSize) {
+        const dataSet = shuffledData.slice(j, j + batchSize);
+        const vectorizedData = dataSet.map((data) =>
+          this.vectorizeTrainingData(data, this.vocabularySize)
+        );
 
-      vectorData.forEach(({ input, target }, i) => {
-        const loss = this.neuralNet.train(input, target, learningRate);
-
-        if (i % tenPercent === 0) {
-          percentDone += 10;
-          console.log(` Trained ${percentDone}% | Loss: ${loss}`);
+        // Datasets
+        for (let k = 0; k < vectorizedData.length; k++) {
+          const { input, target } = vectorizedData[k];
+          const loss = this.neuralNet.train(input, target, learningRate);
+          epochLoss.push(loss);
         }
-      });
+
+        if (j % tenPercent === 0) {
+          const avgLoss =
+            epochLoss.reduce((acc, cur) => (acc += cur), 0) / epochLoss.length;
+          console.log(
+            ` Trained ${round(j / tenPercent)}% | Av. loss: ${round(avgLoss)}`
+          );
+        }
+      }
     }
 
     return this.neuralNet.getModelState();
@@ -180,7 +190,15 @@ export class Embedder {
     return this.embeddings;
   }
 
-  getNearestNeighbors(targetToken: number, n: number): number[] {
+  getEmbedding(token: number): number[] {
+    if (!this.embeddings[token]) {
+      throw new Error(`Token does not exist as embedding (received ${token})`);
+    }
+
+    return this.embeddings[token];
+  }
+
+  findNearest(targetToken: number, neighbors: number = 3): number[] {
     if (!this.embeddings[targetToken]) {
       throw new Error(`Invalid token (received ${targetToken})`);
     }
@@ -199,6 +217,6 @@ export class Embedder {
       .sort((a, b) => b[1] - a[1])
       .map((val) => Number(val[0]));
 
-    return nearesetNeighbors.slice(0, n);
+    return nearesetNeighbors.slice(0, neighbors);
   }
 }
