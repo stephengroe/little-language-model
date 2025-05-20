@@ -1,18 +1,19 @@
 export const trainingConfig = {
-  outputFolder: './output/embedding',
+  outputFolder: './output/embedding-test',
   embedding: {
-    vocabularySize: 5_000,
+    vocabularySize: 1_000,
     vectorSize: 64,
-    epochs: 10,
+    epochs: 250,
     learningRate: 0.01,
     batchSize: 100,
-    sampleEmbeddings: 10, // Number of embeddings to sample in console
+    sampledEmbeddings: ['Marley</w>', 'Scrooge</w>', 'dead</w>', 'I</w>'],
+    randomSamples: 10, // Number of embeddings to sample in console
     nearestNeighbors: 10,
     contextWindow: 2, // Word2Vec context words to include
     inputTextDirectory: './data/dickens/',
     inputTexts: [
-      // 'sample.txt',
-      'a-christmas-carol.txt',
+      'sample.txt',
+      // 'a-christmas-carol.txt',
       // 'american-notes.txt',
       // 'bleak-house.txt',
       // 'david-copperfield.txt',
