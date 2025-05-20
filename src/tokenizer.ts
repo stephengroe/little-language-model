@@ -1,5 +1,6 @@
 export class Tokenizer {
   private wordToToken: Map<string, number>;
+  private tokenToWord: Map<number, string>;
   // Set up corpus for merging
   private texts: string[][];
   // Set up index (to store locations of pairs for merging)
@@ -7,7 +8,6 @@ export class Tokenizer {
   // Set up frequency map
   private frequencyMap: Map<string, number>;
   private tokenizedCorpus: number[];
-  private tokenToWord: Map<number, string>;
 
   constructor(texts: string[][]) {
     this.texts = JSON.parse(JSON.stringify(texts));
@@ -205,18 +205,21 @@ export class Tokenizer {
     return this.wordToToken;
   }
 
-  getTokenFromWord(word: string) {
+  getTokenFromWord(word: string): number {
     if (!this.wordToToken.has(word)) {
-      throw new Error(`Word '${word}' does not exist in vocabulary`);
+      console.warn(`Skipping word '${word}', does not exist in vocabulary`);
+      return -1;
     }
-    return this.wordToToken.get(word);
+
+    return this.wordToToken.get(word)!;
   }
 
-  getWordFromToken(token: number) {
+  getWordFromToken(token: number): string {
     if (!this.tokenToWord.has(token)) {
-      throw new Error(`Token #${token} does not exist in vocabulary`);
+      console.warn(`Skipping token #${token}, does not exist in vocabulary`);
+      return '';
     }
-    return this.tokenToWord.get(token);
+    return this.tokenToWord.get(token)!;
   }
 
   getMergedText() {
