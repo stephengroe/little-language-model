@@ -61,16 +61,15 @@ export class Embedder {
     logInterval: number = 0.1 // default of 10%
   ): ModelState {
     const trainingData = this.generateTrainingData(contextWindow);
+    const totalBatches = Math.ceil(trainingData.length / batchSize);
+    const progressStep = Math.floor(logInterval * totalBatches);
+    let nextProgress = progressStep;
 
     // Epochs
     for (let i = 0; i < epochs; i++) {
       console.log(`\nEpoch #${i + 1}`);
       const epochLoss: number[] = [];
       const shuffledData = shuffleArray(trainingData);
-
-      const totalBatches = Math.ceil(shuffledData.length / batchSize);
-      const progressStep = Math.floor(logInterval * totalBatches);
-      let nextProgress = progressStep;
 
       // Batches
       for (let j = 0; j < shuffledData.length; j += batchSize) {
