@@ -65,7 +65,8 @@ async function main() {
     trainingConfig.embedding.batchSize,
     trainingConfig.embedding.contextWindow,
     trainingConfig.embedding.learningRate,
-    trainingConfig.embedding.epochs
+    trainingConfig.embedding.epochs,
+    trainingConfig.embedding.logInterval
   );
   await saveFile(
     filePath,

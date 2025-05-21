@@ -2,7 +2,7 @@ import { Layer } from './Layer';
 import { ActivationFunction } from './ActivationFunction/ActivationFunction';
 import { ReLU } from './ActivationFunction/ReLU';
 import { Identity } from './ActivationFunction/Identity';
-import { softmax, round } from './utils';
+import { softmax, round, norm } from './utils';
 
 // Types
 export type ModelState = {

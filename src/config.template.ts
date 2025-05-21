@@ -1,6 +1,7 @@
 export const trainingConfig = {
   outputFolder: './output/embedding-test',
   embedding: {
+    logInterval: 0.1,
     vocabularySize: 5_000,
     vectorSize: 64,
     epochs: 25,
