@@ -1,4 +1,3 @@
-import { trainingConfig } from './config';
 import { ModelState, NeuralNetwork } from './NeuralNetwork';
 import { shuffleArray, getCosineSimilarity, round } from './utils';
 import { saveFile } from './utils';
@@ -58,7 +57,8 @@ export class Embedder {
     batchSize: number,
     contextWindow: number,
     learningRate: number,
-    epochs: number
+    epochs: number,
+    logInterval: number = 0.1 // default of 10%
   ): ModelState {
     const trainingData = this.generateTrainingData(contextWindow);
 
@@ -66,32 +66,39 @@ export class Embedder {
     for (let i = 0; i < epochs; i++) {
       console.log(`\nEpoch #${i + 1}`);
       const epochLoss: number[] = [];
-
       const shuffledData = shuffleArray(trainingData);
-      const tenPercent = Math.ceil(shuffledData.length / 10);
+
+      const totalBatches = Math.ceil(shuffledData.length / batchSize);
+      const progressStep = Math.floor(logInterval * totalBatches);
+      let nextProgress = progressStep;
 
       // Batches
       for (let j = 0; j < shuffledData.length; j += batchSize) {
-        const dataSet = shuffledData.slice(j, j + batchSize);
-        const vectorizedData = dataSet.map((data) =>
-          this.vectorizeTrainingData(data, this.vocabularySize)
-        );
+        const batchData = shuffledData
+          .slice(j, j + batchSize)
+          .map((data) => this.vectorizeTrainingData(data, this.vocabularySize));
 
-        // Datasets
-        for (let k = 0; k < vectorizedData.length; k++) {
-          const { input, target } = vectorizedData[k];
+        batchData.forEach(({ input, target }) => {
           const loss = this.neuralNet.train(input, target, learningRate);
           epochLoss.push(loss);
-        }
+        });
 
-        if (j % tenPercent === 0) {
+        if (j / batchSize >= nextProgress) {
+          const recentLoss = epochLoss.slice(-progressStep);
           const avgLoss =
-            epochLoss.reduce((acc, cur) => (acc += cur), 0) / epochLoss.length;
+            recentLoss.reduce((acc, cur) => (acc += cur), 0) /
+            recentLoss.length;
           console.log(
-            ` Trained ${round(j / tenPercent)}% | Av. loss: ${round(avgLoss)}`
+            ` Trained ${round((nextProgress / totalBatches) * 100, 0)}% | Av. loss: ${round(avgLoss)}`
           );
+
+          nextProgress += progressStep;
         }
       }
+
+      const avgLoss =
+        epochLoss.reduce((acc, cur) => (acc += cur), 0) / epochLoss.length;
+      console.log(`               Av. loss: ${round(avgLoss, 4)}`);
     }
 
     return this.neuralNet.getModelState();
