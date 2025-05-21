@@ -10,7 +10,7 @@ export class Node {
   constructor(
     inputSize: number,
     activation: ActivationFunction,
-    initScale: number
+    initScale: number = 1
   ) {
     if (inputSize < 1) {
       throw new Error(`Input length must one or more (got ${inputSize})`);
