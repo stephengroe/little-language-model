@@ -102,3 +102,8 @@ export function getCosineSimilarity(a: number[], b: number[]): number {
 export function round(input: number, places: number = 2): number {
   return Math.round(input * 10 ** places) / 10 ** places;
 }
+
+// Euclidian norm of vector
+export function norm(vector: number[]): number {
+  return Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
+}

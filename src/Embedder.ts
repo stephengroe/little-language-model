@@ -1,5 +1,5 @@
 import { ModelState, NeuralNetwork } from './NeuralNetwork';
-import { shuffleArray, getCosineSimilarity, round } from './utils';
+import { shuffleArray, getCosineSimilarity, round, norm } from './utils';
 import { saveFile } from './utils';
 
 // Types
@@ -98,7 +98,15 @@ export class Embedder {
 
       const avgLoss =
         epochLoss.reduce((acc, cur) => (acc += cur), 0) / epochLoss.length;
-      console.log(`               Av. loss: ${round(avgLoss, 4)}`);
+
+      const weights = this.neuralNet.getLayers()[0].getWeights();
+      const avgNorm =
+        weights.reduce((sum, nodeWeights) => sum + norm(nodeWeights), 0) /
+        weights.length;
+
+      console.log(
+        ` Av. loss: ${round(avgLoss, 4)} | Av. norm: ${round(avgNorm, 4)}`
+      );
     }
 
     return this.neuralNet.getModelState();
