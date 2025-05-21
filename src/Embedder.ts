@@ -63,10 +63,10 @@ export class Embedder {
     const trainingData = this.generateTrainingData(contextWindow);
     const totalBatches = Math.ceil(trainingData.length / batchSize);
     const progressStep = Math.floor(logInterval * totalBatches);
-    let nextProgress = progressStep;
 
     // Epochs
     for (let i = 0; i < epochs; i++) {
+      let nextProgress = progressStep;
       console.log(`\nEpoch #${i + 1}`);
       const epochLoss: number[] = [];
       const shuffledData = shuffleArray(trainingData);
