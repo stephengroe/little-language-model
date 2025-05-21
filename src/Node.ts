@@ -7,12 +7,19 @@ export class Node {
   private z: number;
   private activation: ActivationFunction;
 
-  constructor(inputSize: number, activation: ActivationFunction) {
+  constructor(
+    inputSize: number,
+    activation: ActivationFunction,
+    initScale: number
+  ) {
     if (inputSize < 1) {
       throw new Error(`Input length must one or more (got ${inputSize})`);
     }
 
-    this.weights = Array.from({ length: inputSize }, () => Math.random() - 0.5);
+    this.weights = Array.from(
+      { length: inputSize },
+      () => (Math.random() - 0.5) * initScale
+    );
     this.bias = 0;
     this.z = 0;
     this.activation = activation;

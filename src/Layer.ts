@@ -16,7 +16,8 @@ export class Layer {
     this.nodes = [];
 
     for (let i = 0; i < layerDepth; i++) {
-      const node = new Node(inputSize, activationFn);
+      const initScale = Math.sqrt(2 / inputSize); // He initialization
+      const node = new Node(inputSize, activationFn, initScale);
       this.nodes.push(node);
     }
   }
