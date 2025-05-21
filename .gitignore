@@ -9,6 +9,7 @@
 /data/
 /models/
 /output/
+/src/config.ts
 
 # Environment files
 .env
