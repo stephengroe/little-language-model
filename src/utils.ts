@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'fs/promises';
+import { prependListener } from 'process';
 
 // Read from disk
 export async function loadFile(
@@ -106,4 +107,54 @@ export function round(input: number, places: number = 2): number {
 // Euclidian norm of vector
 export function norm(vector: number[]): number {
   return Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
+}
+
+// Progress loading bar
+export class ProgressBar {
+  private label: string;
+  private total: number;
+  private progress: number;
+  private barWidth = 20;
+
+  constructor(label: string, total: number) {
+    this.label = label;
+    this.total = total;
+    this.progress = 0;
+
+    this.update(0);
+  }
+
+  update(newProgress: number) {
+    if (newProgress > 0) {
+      this.progress = newProgress;
+    }
+    const percent = Math.round((this.progress / this.total) * 100);
+    this.render(Math.min(percent, 100)); // Prevent 100+ percent
+
+    if (this.progress >= this.total) {
+      this.done();
+    }
+  }
+
+  render(percent: number) {
+    process.stdout.clearLine(1);
+    process.stdout.cursorTo(0);
+    process.stdout.write(
+      `${this.label} ${this.drawBar()} [${percent}% - ${this.progress}/${this.total}]`
+    );
+  }
+
+  drawBar() {
+    const done = Math.max(
+      Math.floor(this.progress / (this.total / this.barWidth)),
+      0
+    );
+    const undone = this.barWidth - done;
+
+    return `${'█'.repeat(done)}${'▒'.repeat(undone)}`;
+  }
+
+  done() {
+    process.stdout.write(`\n`);
+  }
 }
