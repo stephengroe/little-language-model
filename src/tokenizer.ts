@@ -1,3 +1,5 @@
+import { ProgressBar } from './utils';
+
 export class Tokenizer {
   private wordToToken: Map<string, number>;
   private tokenToWord: Map<number, string>;
@@ -103,6 +105,8 @@ export class Tokenizer {
 
   // Merge all token pairs
   mergeAllTokenPairs(vocabularySize: number): void {
+    const progress = new ProgressBar('  Merging tokens', vocabularySize);
+
     // Start count of all tokens
     let totalTokens = this.wordToToken.size;
 
@@ -121,7 +125,8 @@ export class Tokenizer {
       totalTokens += 1;
 
       if (totalTokens % 1000 === 0) {
-        console.log(`Merged ${totalTokens}/${vocabularySize} tokens`);
+        progress.update(totalTokens);
+        // console.log(`Merged ${totalTokens}/${vocabularySize} tokens`);
       }
     }
   }

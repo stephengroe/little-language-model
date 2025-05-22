@@ -1,5 +1,11 @@
 import { ModelState, NeuralNetwork } from './NeuralNetwork';
-import { shuffleArray, getCosineSimilarity, round, norm } from './utils';
+import {
+  shuffleArray,
+  getCosineSimilarity,
+  round,
+  norm,
+  ProgressBar,
+} from './utils';
 import { saveFile } from './utils';
 
 // Types
@@ -68,6 +74,8 @@ export class Embedder {
     for (let i = 0; i < epochs; i++) {
       let nextProgress = progressStep;
       console.log(`\nEpoch #${i + 1}`);
+      const progress = new ProgressBar('  Training', trainingData.length);
+
       const epochLoss: number[] = [];
       const shuffledData = shuffleArray(trainingData);
 
@@ -82,15 +90,12 @@ export class Embedder {
           epochLoss.push(loss);
         });
 
-        if (j / batchSize >= nextProgress) {
+        if ((j + batchSize) / batchSize >= nextProgress) {
           const recentLoss = epochLoss.slice(-progressStep);
           const avgLoss =
             recentLoss.reduce((acc, cur) => (acc += cur), 0) /
             recentLoss.length;
-          console.log(
-            ` Trained ${round((nextProgress / totalBatches) * 100, 0)}% | Av. loss: ${round(avgLoss)}`
-          );
-
+          progress.update(j + batchSize);
           nextProgress += progressStep;
         }
       }
@@ -104,7 +109,7 @@ export class Embedder {
         weights.length;
 
       console.log(
-        ` Av. loss: ${round(avgLoss, 4)} | Av. norm: ${round(avgNorm, 4)}`
+        `  Av. loss: ${round(avgLoss, 4)} | Av. norm: ${round(avgNorm, 4)}`
       );
     }
 
