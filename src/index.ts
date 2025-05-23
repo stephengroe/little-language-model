@@ -61,6 +61,7 @@ async function main() {
 
   /* FOR TRAINING EMBEDDINGS */
   console.log(`Training embeddings...`);
+  console.time(`Training embeddings`);
   const embeddingModel = embedder.train(
     trainingConfig.embedding.batchSize,
     trainingConfig.embedding.contextWindow,
@@ -68,6 +69,7 @@ async function main() {
     trainingConfig.embedding.epochs,
     trainingConfig.embedding.logInterval
   );
+  console.timeEnd(`Training embeddings`);
   await saveFile(
     filePath,
     `model-state.json`,
