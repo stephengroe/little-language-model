@@ -105,7 +105,7 @@ export class Tokenizer {
 
   // Merge all token pairs
   mergeAllTokenPairs(vocabularySize: number): void {
-    const progress = new ProgressBar('  Merging tokens', vocabularySize);
+    const progress = new ProgressBar(vocabularySize);
 
     // Start count of all tokens
     let totalTokens = this.wordToToken.size;

@@ -111,13 +111,11 @@ export function norm(vector: number[]): number {
 
 // Progress loading bar
 export class ProgressBar {
-  private label: string;
   private total: number;
   private progress: number;
-  private barWidth = 20;
+  private barWidth = 50;
 
-  constructor(label: string, total: number) {
-    this.label = label;
+  constructor(total: number) {
     this.total = total;
     this.progress = 0;
 
@@ -140,7 +138,7 @@ export class ProgressBar {
     process.stdout.clearLine(1);
     process.stdout.cursorTo(0);
     process.stdout.write(
-      `${this.label} ${this.drawBar()} [${percent}% - ${this.progress}/${this.total}]`
+      `${percent}% ${this.drawBar()} [${this.progress}/${this.total}]`
     );
   }
 
@@ -168,7 +166,7 @@ export function toOneHot(
 
   if (Array.isArray(index)) {
     index.forEach((i) => {
-      oneHot[i] += i / index.length; // return averaged one-hot
+      oneHot[i] += 1 / index.length; // return averaged one-hot
     });
   } else {
     oneHot[index] = 1;

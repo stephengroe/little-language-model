@@ -57,28 +57,28 @@ export class Embedder {
     for (let i = 0; i < epochs; i++) {
       console.log(`\nEpoch #${i + 1}`);
       const batches = dataLoader.batch(batchSize, true);
-      const progress = new ProgressBar('  Training', batches.length);
-      const progressInterval = batches.length / logInterval;
+      const progress = new ProgressBar(batches.length);
+      const progressInterval = Math.floor(batches.length * logInterval);
 
       const epochLoss: number[] = [];
 
       for (let j = 0; j < batches.length; j++) {
         let { batchInputs, batchTargets } = batches[j];
-        batchInputs = batchInputs.map((input) =>
-          toOneHot(input, this.vocabularySize)
-        );
-        batchTargets = batchTargets.map((target) =>
+        const oneHotInputs = batchInputs.map((input) => {
+          return toOneHot(input, this.vocabularySize);
+        });
+        const oneHotTargets = batchTargets.map((target) =>
           toOneHot(target, this.vocabularySize)
         );
 
         const loss = this.neuralNet.train(
-          batchInputs,
-          batchTargets,
+          oneHotInputs,
+          oneHotTargets,
           learningRate
         );
         epochLoss.push(loss);
 
-        if (j % progressInterval === 0 || j >= batches.length) {
+        if (j % progressInterval === 0 || j === batches.length) {
           progress.update(j);
         }
       }

@@ -15,7 +15,19 @@ describe('NeuralNetwork class', () => {
   test('weights change with learning', () => {
     const neuralNet = new NeuralNetwork([3, 10, 3]);
     const prevWeights = neuralNet.getLayers()[1].getWeights().flat();
-    const loss = neuralNet.train([1, 0, 0], [1, 0, 0], 0.1);
+    const loss = neuralNet.train(
+      [
+        [1, 0, 0],
+        [1, 0, 0],
+        [1, 0, 0],
+      ],
+      [
+        [1, 0, 0],
+        [1, 0, 0],
+        [1, 0, 0],
+      ],
+      0.1
+    );
     const newWeights = neuralNet.getLayers()[1].getWeights().flat();
 
     expect(newWeights).not.toEqual(prevWeights);
@@ -24,7 +36,19 @@ describe('NeuralNetwork class', () => {
   test('biases change with learning', () => {
     const neuralNet = new NeuralNetwork([3, 10, 3]);
     const prevBiases = neuralNet.getLayers()[1].getBiases();
-    neuralNet.train([1, 0, 0], [1, 0, 0], 0.1);
+    const loss = neuralNet.train(
+      [
+        [1, 0, 0],
+        [1, 0, 0],
+        [1, 0, 0],
+      ],
+      [
+        [1, 0, 0],
+        [1, 0, 0],
+        [1, 0, 0],
+      ],
+      0.1
+    );
     const newBiases = neuralNet.getLayers()[1].getBiases();
 
     expect(newBiases).not.toEqual(prevBiases);
@@ -32,8 +56,8 @@ describe('NeuralNetwork class', () => {
 
   test('cross-entropy loss works', () => {
     const neuralNet = new NeuralNetwork([5, 10, 5]);
-    const a = neuralNet.loss([0.9, 0.1], 0);
-    const b = neuralNet.loss([0.1, 0.9], 0);
+    const a = neuralNet.loss([0.9, 0.1], [1, 0]);
+    const b = neuralNet.loss([0.1, 0.9], [1, 0]);
 
     expect(a < b).toBe(true);
   });

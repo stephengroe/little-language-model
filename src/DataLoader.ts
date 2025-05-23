@@ -1,11 +1,11 @@
 export type TrainingData = {
-  input: number | number[];
-  target: number | number[];
+  input: number[];
+  target: number;
 };
 
 export type TrainingBatch = {
-  batchInputs: (number | number[])[];
-  batchTargets: (number | number[])[];
+  batchInputs: number[][];
+  batchTargets: number[];
 };
 
 export class DataLoader {

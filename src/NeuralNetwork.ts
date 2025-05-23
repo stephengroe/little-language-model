@@ -34,18 +34,43 @@ export class NeuralNetwork {
     }
   }
 
-  train(input: number[], expected: number[], learningRate: number): number {
-    const predicted = this.predict(input);
-    const targetIndex = expected.findIndex((n) => n === 1);
-    const loss = this.loss(predicted, targetIndex);
-    const lossGradient = this.getLossGradient(predicted, expected);
+  train(inputs: number[][], targets: number[][], learningRate: number): number {
+    if (inputs.length !== targets.length) {
+      throw new Error(`Input and target of different lengths`);
+    }
 
-    // console.log(` Input: ${input}`);
-    // console.log(` Pred.: ${predicted.map((n) => round(n))}`);
+    const batchLoss = [];
+    const accLossGradient: number[] = [];
 
-    this.backward(lossGradient, learningRate);
+    // Iterate over each example
+    for (let i = 0; i < inputs.length; i++) {
+      const input = inputs[i];
+      const target = targets[i];
 
-    return loss;
+      const predicted = this.predict(input);
+      const loss = this.loss(predicted, target);
+      batchLoss.push(loss);
+
+      const lossGradient = this.getLossGradient(predicted, target);
+
+      if (accLossGradient.length === 0) {
+        for (let j = 0; j < lossGradient.length; j++) {
+          accLossGradient.push(0);
+        }
+      }
+
+      for (let j = 0; j < accLossGradient.length; j++) {
+        accLossGradient[j] += lossGradient[j];
+      }
+    }
+
+    for (let i = 0; i < accLossGradient.length; i++) {
+      accLossGradient[i] /= accLossGradient.length;
+    }
+
+    this.backward(accLossGradient, learningRate);
+
+    return batchLoss.reduce((sum, val) => (sum += val)) / batchLoss.length;
   }
 
   backward(lossGradient: number[], learningRate: number) {
@@ -55,9 +80,10 @@ export class NeuralNetwork {
   }
 
   // Cross entropy (softmax prediction, one-hot expected)
-  loss(predicted: number[], expectedIndex: number): number {
+  loss(predicted: number[], target: number[]): number {
+    const targetIndex = target.findIndex((n) => n === 1);
     const epsilon = 1e-15; // to prevent log(0) error
-    const prob = Math.max(predicted[expectedIndex], epsilon);
+    const prob = Math.max(predicted[targetIndex], epsilon);
     return -Math.log(prob);
   }
 
