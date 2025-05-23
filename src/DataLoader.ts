@@ -1,14 +1,14 @@
 export type TrainingData = {
-  input: number[];
-  target: number[];
+  input: number | number[];
+  target: number | number[];
 };
 
 export type TrainingBatch = {
-  batchInputs: number[][];
-  batchTargets: number[][];
+  batchInputs: (number | number[])[];
+  batchTargets: (number | number[])[];
 };
 
-class DataLoader {
+export class DataLoader {
   private data: TrainingData[];
 
   constructor(data: TrainingData[]) {

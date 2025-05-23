@@ -158,3 +158,21 @@ export class ProgressBar {
     process.stdout.write(`\n`);
   }
 }
+
+// Convert index to one-hot
+export function toOneHot(
+  index: number | number[],
+  vectorSize: number
+): number[] {
+  const oneHot = Array.from({ length: vectorSize }, () => 0);
+
+  if (Array.isArray(index)) {
+    index.forEach((i) => {
+      oneHot[i] += i / index.length; // return averaged one-hot
+    });
+  } else {
+    oneHot[index] = 1;
+  }
+
+  return oneHot;
+}

@@ -5,11 +5,13 @@ import {
   round,
   norm,
   ProgressBar,
+  toOneHot,
 } from './utils';
 import { saveFile } from './utils';
+import { TrainingData, TrainingBatch, DataLoader } from './DataLoader';
 
-// Types
-export type TrainingSet = {
+// For CBOW
+export type CBOWPair = {
   input: number[];
   target: number;
 };
@@ -39,25 +41,6 @@ export class Embedder {
     this.neuralNet = new NeuralNetwork(neuralNetLayers);
   }
 
-  async saveNeuralNet() {
-    await saveFile(
-      './',
-      'initial-neural-net.json',
-      JSON.stringify(this.neuralNet.getModelState(), null, 2)
-    );
-  }
-
-  buildFromSavedModel(savedModel: ModelState, vocabularySize: number) {
-    const neuralNetLayers = savedModel.layers.map((layer) => {
-      return layer.weights.length;
-    });
-    // Add input layer
-    neuralNetLayers.unshift(vocabularySize);
-    this.neuralNet = new NeuralNetwork(neuralNetLayers);
-
-    this.neuralNet.buildFromSavedModel(savedModel);
-  }
-
   // Train
   train(
     batchSize: number,
@@ -66,59 +49,50 @@ export class Embedder {
     epochs: number,
     logInterval: number = 0.1 // default of 10%
   ): ModelState {
-    const trainingData = this.generateTrainingData(contextWindow);
-    const totalBatches = Math.ceil(trainingData.length / batchSize);
-    const progressStep = Math.floor(logInterval * totalBatches);
+    const trainingExamples = this.generateCBOWPairs(contextWindow);
+
+    const dataLoader = new DataLoader(trainingExamples);
 
     // Epochs
     for (let i = 0; i < epochs; i++) {
-      let nextProgress = progressStep;
       console.log(`\nEpoch #${i + 1}`);
-      const progress = new ProgressBar('  Training', trainingData.length);
+      const batches = dataLoader.batch(batchSize, true);
+      const progress = new ProgressBar('  Training', batches.length);
+      const progressInterval = batches.length / logInterval;
 
       const epochLoss: number[] = [];
-      const shuffledData = shuffleArray(trainingData);
 
-      // Batches
-      for (let j = 0; j < shuffledData.length; j += batchSize) {
-        const batchData = shuffledData
-          .slice(j, j + batchSize)
-          .map((data) => this.vectorizeTrainingData(data, this.vocabularySize));
+      for (let j = 0; j < batches.length; j++) {
+        let { batchInputs, batchTargets } = batches[j];
+        batchInputs = batchInputs.map((input) =>
+          toOneHot(input, this.vocabularySize)
+        );
+        batchTargets = batchTargets.map((target) =>
+          toOneHot(target, this.vocabularySize)
+        );
 
-        batchData.forEach(({ input, target }) => {
-          const loss = this.neuralNet.train(input, target, learningRate);
-          epochLoss.push(loss);
-        });
+        const loss = this.neuralNet.train(
+          batchInputs,
+          batchTargets,
+          learningRate
+        );
+        epochLoss.push(loss);
 
-        if ((j + batchSize) / batchSize >= nextProgress) {
-          const recentLoss = epochLoss.slice(-progressStep);
-          const avgLoss =
-            recentLoss.reduce((acc, cur) => (acc += cur), 0) /
-            recentLoss.length;
-          progress.update(j + batchSize);
-          nextProgress += progressStep;
+        if (j % progressInterval === 0 || j >= batches.length) {
+          progress.update(j);
         }
       }
 
       const avgLoss =
         epochLoss.reduce((acc, cur) => (acc += cur), 0) / epochLoss.length;
-
-      const weights = this.neuralNet.getLayers()[0].getWeights();
-      const avgNorm =
-        weights.reduce((sum, nodeWeights) => sum + norm(nodeWeights), 0) /
-        weights.length;
-
-      console.log(
-        `  Av. loss: ${round(avgLoss, 4)} | Av. norm: ${round(avgNorm, 4)}`
-      );
+      console.log(`  Av. loss: ${round(avgLoss, 4)}`);
     }
 
     return this.neuralNet.getModelState();
   }
 
-  // Build CBOW training groups
-  generateTrainingData(contextWindow: number): TrainingSet[] {
-    const trainingData: TrainingSet[] = [];
+  generateCBOWPairs(contextWindow: number): CBOWPair[] {
+    const trainingData: CBOWPair[] = [];
 
     for (
       let i = contextWindow;
@@ -139,54 +113,23 @@ export class Embedder {
     return trainingData;
   }
 
-  // Transform training data into one-hot
-  oneHot(index: number, vocabSize: number): number[] {
-    const oneHot = Array.from({ length: vocabSize }, () => 0);
-    oneHot[index] = 1;
-    return oneHot;
+  async saveNeuralNet() {
+    await saveFile(
+      './',
+      'initial-neural-net.json',
+      JSON.stringify(this.neuralNet.getModelState(), null, 2)
+    );
   }
 
-  vectorizeTrainingData(
-    trainingData: TrainingSet,
-    vocabSize: number
-  ): { input: number[]; target: number[] } {
-    const { input, target } = trainingData;
-    const inputVector = Array.from({ length: vocabSize }, () => 0);
-    const targetVector = this.oneHot(target, vocabSize);
+  buildFromSavedModel(savedModel: ModelState, vocabularySize: number) {
+    const neuralNetLayers = savedModel.layers.map((layer) => {
+      return layer.weights.length;
+    });
+    // Add input layer
+    neuralNetLayers.unshift(vocabularySize);
+    this.neuralNet = new NeuralNetwork(neuralNetLayers);
 
-    for (let i = 0; i < input.length; i++) {
-      inputVector[input[i]] += 1 / input.length;
-    }
-
-    return { input: inputVector, target: targetVector };
-  }
-
-  vectorizeBatch(
-    trainingBatch: TrainingSet[],
-    vocabSize: number
-  ): { input: number[][]; target: number[][] } {
-    let resultInput: number[][] = [];
-    let resultTarget: number[][] = [];
-
-    for (let i = 0; i < trainingBatch.length; i++) {
-      const item = trainingBatch[i];
-      if (
-        item.input === undefined ||
-        item.target === undefined ||
-        item === undefined
-      ) {
-        console.warn(`Skipping undefined input at index ${i}:`, item);
-        continue;
-      }
-
-      const { input: vectorizedInput, target: vectorizedTarget } =
-        this.vectorizeTrainingData(trainingBatch[i], vocabSize);
-
-      resultInput.push(vectorizedInput);
-      resultTarget.push(vectorizedTarget);
-    }
-
-    return { input: resultInput, target: resultTarget };
+    this.neuralNet.buildFromSavedModel(savedModel);
   }
 
   buildEmbeddings() {
@@ -196,7 +139,7 @@ export class Embedder {
     const lastLayer = this.neuralNet.getLayers().length - 1;
 
     for (let i = 0; i < this.vocabularySize; i++) {
-      const vocabOneHot = this.oneHot(i, this.vocabularySize);
+      const vocabOneHot = toOneHot(i, this.vocabularySize);
       const vector = this.neuralNet.forwardToLayer(vocabOneHot, lastLayer);
 
       embeddings[i] = vector;
