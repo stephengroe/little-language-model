@@ -95,11 +95,11 @@ async function main() {
   // Print nearest neighbors of sample embeddings
   console.log(`Sampling embeddings...`);
 
-  const sampleTokens: number[] = trainingConfig.embedding.sampledEmbeddings.map(
-    (word) => {
+  const sampleTokens: number[] = trainingConfig.embedding.sampledEmbeddings
+    .map((word) => {
       return tokenizer.getTokenFromWord(word);
-    }
-  );
+    })
+    .filter((n) => n >= 0); // remove invalid tokens
 
   // Sample random tokens from corpus
   const uniqueWords = Array.from(
