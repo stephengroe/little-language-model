@@ -75,6 +75,7 @@ async function main() {
     `model-state.json`,
     JSON.stringify(embeddingModel, null, 2)
   );
+  const embeddings = embedder.buildEmbeddings();
 
   /* FOR GENERATING FROM SAVED MODEL
   const savedModel = await loadFile(filePath, `model-state.json`);
@@ -83,14 +84,6 @@ async function main() {
     trainingConfig.embedding.vocabularySize
   );
   */
-
-  console.log(`Saving embeddings...`);
-  const embeddings = embedder.buildEmbeddings();
-  await saveFile(
-    filePath,
-    `embeddings.json`,
-    JSON.stringify(embedder.getEmbeddings(), null)
-  );
 
   // Print nearest neighbors of sample embeddings
   console.log(`Sampling embeddings...`);
@@ -113,6 +106,7 @@ async function main() {
 
   for (const sampleToken of sampleTokens) {
     console.log(` Nearest to '${tokenizer.getWordFromToken(sampleToken)}'`);
+    console.log(`   Frequency: ${tokenizer.getTokenCount(sampleToken)}`);
     const nearestNeighbors = embedder.findNearest(
       sampleToken,
       trainingConfig.embedding.nearestNeighbors
@@ -122,6 +116,13 @@ async function main() {
       console.log(`   ${index + 1}) ${word}`);
     });
   }
+
+  console.log(`Saving embeddings...`);
+  await saveFile(
+    filePath,
+    `embeddings.json`,
+    JSON.stringify(embedder.getEmbeddings(), null)
+  );
 
   // Log success
   console.log(`Steps complete!`);
