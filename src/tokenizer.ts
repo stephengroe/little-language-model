@@ -226,6 +226,12 @@ export class Tokenizer {
     });
   }
 
+  filterLowFrequency(minCount: number = 5) {
+    this.tokenizedCorpus = this.tokenizedCorpus.filter((token) => {
+      return (this.tokenCounts.get(token) ?? 0) >= minCount;
+    });
+  }
+
   getTokenizedCorpus(): number[] {
     return this.tokenizedCorpus;
   }
