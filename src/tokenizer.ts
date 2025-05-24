@@ -10,12 +10,14 @@ export class Tokenizer {
   // Set up frequency map
   private frequencyMap: Map<string, number>;
   private tokenizedCorpus: number[];
+  private tokenCounts: Map<number, number>;
 
   constructor(texts: string[][]) {
     this.texts = JSON.parse(JSON.stringify(texts));
     this.pairIndex = new Map<string, Set<number>>();
     this.frequencyMap = new Map<string, number>();
     this.tokenizedCorpus = [];
+    this.tokenCounts = new Map<number, number>();
 
     [this.wordToToken, this.tokenToWord] =
       this.buildVocabularyFromCorpus(texts);
@@ -113,10 +115,11 @@ export class Tokenizer {
     // While we still have merges left, continue
     while (totalTokens < vocabularySize) {
       // Find most common pair
-      const mostCommonPair = this.findMostCommonTokenPair();
+      const [mostCommonPair, tokenCount] = this.findMostCommonTokenPair();
       // Error handling to prevent infinite loop
       if (!mostCommonPair) break;
       // Merge that pair
+      this.tokenCounts.set(totalTokens, tokenCount);
       this.mergeTokenPair(mostCommonPair);
       // Add to vocabulary
       this.wordToToken.set(mostCommonPair, totalTokens);
@@ -169,7 +172,7 @@ export class Tokenizer {
   }
 
   // Find most common adjacent token pair
-  findMostCommonTokenPair(): string {
+  findMostCommonTokenPair(): [string, number] {
     // Set max count and tokens
     let maxCount = -Infinity;
     let mostCommonToken: string = '';
@@ -183,7 +186,7 @@ export class Tokenizer {
       }
     }
 
-    return mostCommonToken;
+    return [mostCommonToken, maxCount];
   }
 
   // Tokenize corpus
@@ -229,5 +232,9 @@ export class Tokenizer {
 
   getMergedText() {
     return this.texts;
+  }
+
+  getTokenCount(token: number): number {
+    return this.tokenCounts.get(token) || 0;
   }
 }
