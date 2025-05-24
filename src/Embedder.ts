@@ -152,6 +152,23 @@ export class Embedder {
     return this.embeddings;
   }
 
+  getEmbeddingsMatrix(): Float32Array {
+    const ids = Object.keys(this.embeddings)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const embeddingSize = this.embeddings[ids[0]].length;
+    const flatArray = new Float32Array(ids.length * embeddingSize);
+
+    ids.forEach((id, i) => {
+      const vector = this.embeddings[id];
+      for (let j = 0; j < embeddingSize; j++) {
+        flatArray[i * embeddingSize + j] = vector[j];
+      }
+    });
+
+    return flatArray;
+  }
+
   getEmbedding(token: number): number[] {
     if (!this.embeddings[token]) {
       throw new Error(`Token does not exist as embedding (received ${token})`);

@@ -22,7 +22,7 @@ export async function loadFile(
 export async function saveFile(
   filePath: string,
   fileName: string,
-  data: string
+  data: string | Buffer
 ) {
   const fullPath = `${filePath}${fileName}`;
   try {

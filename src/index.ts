@@ -76,7 +76,8 @@ async function main() {
     `model-state.json`,
     JSON.stringify(embeddingModel, null, 2)
   );
-  const embeddings = embedder.buildEmbeddings();
+  console.log(`Building embeddings...`);
+  embedder.buildEmbeddings();
 
   /* FOR GENERATING FROM SAVED MODEL
   const savedModel = await loadFile(filePath, `model-state.json`);
@@ -119,11 +120,13 @@ async function main() {
   }
 
   console.log(`Saving embeddings...`);
-  await saveFile(
-    filePath,
-    `embeddings.json`,
-    JSON.stringify(embedder.getEmbeddings(), null)
+  const embeddingMatrix = embedder.getEmbeddingsMatrix();
+  const embeddingBuffer = Buffer.from(
+    embeddingMatrix.buffer,
+    embeddingMatrix.byteOffset,
+    embeddingMatrix.byteLength
   );
+  await saveFile(filePath, `embeddings.bin`, embeddingBuffer);
 
   // Log success
   console.log(`Steps complete!`);
