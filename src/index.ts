@@ -45,6 +45,7 @@ async function main() {
   const tokenizer = new Tokenizer(corpus.getTexts());
   tokenizer.mergeAllTokenPairs(trainingConfig.embedding.vocabularySize);
   tokenizer.tokenizeCorpus();
+  tokenizer.applySubsampling();
   await saveFile(
     filePath,
     `tokens.json`,

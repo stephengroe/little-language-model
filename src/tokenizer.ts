@@ -190,7 +190,7 @@ export class Tokenizer {
   }
 
   // Tokenize corpus
-  tokenizeCorpus() {
+  tokenizeCorpus(applySubsampling?: boolean) {
     this.tokenizedCorpus = this.texts.flatMap((word: string[]) => {
       return word.map((token) => {
         const foundToken = this.wordToToken.get(token) ?? -1;
@@ -202,6 +202,27 @@ export class Tokenizer {
           return foundToken;
         }
       });
+    });
+
+    if (applySubsampling) {
+      this.applySubsampling();
+    }
+  }
+
+  applySubsampling() {
+    const probabilities = new Map<number, number>();
+    const t = 1e-3;
+    const totalTokens = this.tokenizedCorpus.length;
+
+    this.tokenizedCorpus = this.tokenizedCorpus.filter((token) => {
+      if (!probabilities.has(token)) {
+        const frequency = this.tokenCounts.get(token) ?? 1;
+        // Mikolov subsampling formula
+        const probability = 1 - Math.sqrt(t / (frequency / totalTokens));
+        probabilities.set(token, probability);
+      }
+      const rand = Math.random();
+      return rand > probabilities.get(token)!;
     });
   }
 
