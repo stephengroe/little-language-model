@@ -81,7 +81,7 @@ async function main() {
     JSON.stringify(embeddingModel, null, 2)
   );
   console.log(`Building embeddings...`);
-  embedder.buildEmbeddings();
+  embedder.buildEmbeddings(trainingConfig.embedding.logInterval);
 
   /* FOR GENERATING FROM SAVED MODEL
   const savedModel = await loadFile(filePath, `model-state.json`);
@@ -93,7 +93,27 @@ async function main() {
 
   // Print nearest neighbors of sample embeddings
   console.log(`Sampling embeddings...`);
+  sampleTokens(tokenizer, embedder);
 
+  console.log(`Saving embeddings...`);
+  const embeddingMatrix = embedder.getEmbeddings();
+  const embeddingBuffer = Buffer.from(
+    embeddingMatrix.buffer,
+    embeddingMatrix.byteOffset,
+    embeddingMatrix.byteLength
+  );
+  await saveFile(filePath, `embeddings.bin`, embeddingBuffer);
+
+  // Log success
+  console.log(`Steps complete!`);
+  console.timeEnd(`Generate project`);
+}
+
+main().catch((err) => {
+  console.error(`Fatal error: `, err);
+});
+
+function sampleTokens(tokenizer: Tokenizer, embedder: Embedder) {
   const sampleTokens: number[] = trainingConfig.embedding.sampledEmbeddings
     .map((word) => {
       return tokenizer.getTokenFromWord(word);
@@ -122,21 +142,4 @@ async function main() {
       console.log(`   ${index + 1}) ${word}`);
     });
   }
-
-  console.log(`Saving embeddings...`);
-  const embeddingMatrix = embedder.getEmbeddingsMatrix();
-  const embeddingBuffer = Buffer.from(
-    embeddingMatrix.buffer,
-    embeddingMatrix.byteOffset,
-    embeddingMatrix.byteLength
-  );
-  await saveFile(filePath, `embeddings.bin`, embeddingBuffer);
-
-  // Log success
-  console.log(`Steps complete!`);
-  console.timeEnd(`Generate project`);
 }
-
-main().catch((err) => {
-  console.error(`Fatal error: `, err);
-});

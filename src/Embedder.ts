@@ -19,9 +19,10 @@ export type CBOWPair = {
 export class Embedder {
   // Create vocabulary
   private vocabularySize: number;
+  private vectorSize: number;
   private neuralNet: NeuralNetwork;
   private trainingData: number[];
-  private embeddings: Record<number, number[]>;
+  private embeddings: Float32Array;
 
   // Constructor
   constructor(
@@ -30,8 +31,9 @@ export class Embedder {
     trainingData: number[]
   ) {
     this.vocabularySize = vocabularySize;
+    this.vectorSize = vectorSize;
     this.trainingData = trainingData;
-    this.embeddings = {};
+    this.embeddings = new Float32Array(vocabularySize * vectorSize);
 
     const neuralNetLayers = [
       this.vocabularySize,
@@ -132,65 +134,64 @@ export class Embedder {
     this.neuralNet.buildFromSavedModel(savedModel);
   }
 
-  buildEmbeddings() {
+  buildEmbeddings(logInterval: number = 0.01) {
+    const progress = new ProgressBar(this.vocabularySize);
+    const progressInterval = this.vocabularySize * logInterval;
     // Clear any existing embeddings
-    this.embeddings = {};
-    const embeddings: Record<number, number[]> = {};
+    this.embeddings = new Float32Array(this.vocabularySize * this.vectorSize);
     const lastLayer = this.neuralNet.getLayers().length - 1;
 
     for (let i = 0; i < this.vocabularySize; i++) {
       const vocabOneHot = toOneHot(i, this.vocabularySize);
       const vector = this.neuralNet.forwardToLayer(vocabOneHot, lastLayer);
 
-      embeddings[i] = vector;
-    }
+      for (let j = 0; j < this.vectorSize; j++) {
+        this.embeddings[i * this.vectorSize + j] = vector[j];
+      }
 
-    this.embeddings = embeddings;
+      if (i % progressInterval === 0 || i === this.vocabularySize - 1) {
+        progress.update(i);
+      }
+    }
   }
 
-  getEmbeddings(): Record<number, number[]> {
+  getEmbeddings(): Float32Array {
     return this.embeddings;
   }
 
-  getEmbeddingsMatrix(): Float32Array {
-    const ids = Object.keys(this.embeddings)
-      .map(Number)
-      .sort((a, b) => a - b);
-    const embeddingSize = this.embeddings[ids[0]].length;
-    const flatArray = new Float32Array(ids.length * embeddingSize);
-
-    ids.forEach((id, i) => {
-      const vector = this.embeddings[id];
-      for (let j = 0; j < embeddingSize; j++) {
-        flatArray[i * embeddingSize + j] = vector[j];
-      }
-    });
-
-    return flatArray;
-  }
-
-  getEmbedding(token: number): number[] {
-    if (!this.embeddings[token]) {
+  getEmbedding(token: number): Float32Array {
+    if (!this.embeddings[token * this.vectorSize]) {
       throw new Error(`Token does not exist as embedding (received ${token})`);
     }
 
-    return this.embeddings[token];
+    const tokenIndex = token * this.vectorSize;
+
+    return this.embeddings.slice(token, token + this.vectorSize);
   }
 
   findNearest(targetToken: number, neighbors: number = 3): number[] {
-    if (!this.embeddings[targetToken]) {
+    if (!this.embeddings[targetToken * this.vectorSize]) {
       throw new Error(`Invalid token (received ${targetToken})`);
     }
 
-    const targetVector = this.embeddings[targetToken];
+    const convertedToken = targetToken * this.vectorSize;
+    const targetVector = Array.from(
+      this.embeddings.subarray(convertedToken, convertedToken + this.vectorSize)
+    );
 
     // Naive solution, computing all values then sorting
-    const similarities: [string, number][] = Object.entries(
-      this.embeddings
-    ).map(([token, vector]) => {
+    const similarities = [];
+    for (let i = 0; i < this.vocabularySize; i++) {
+      const vector = Array.from(
+        this.embeddings.subarray(
+          i * this.vectorSize,
+          i * this.vectorSize + this.vectorSize
+        )
+      );
+
       const similarity: number = getCosineSimilarity(targetVector, vector);
-      return [token, similarity];
-    });
+      similarities[i] = [i, similarity];
+    }
 
     const nearesetNeighbors: number[] = similarities
       .sort((a, b) => b[1] - a[1])
