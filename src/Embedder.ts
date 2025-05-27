@@ -81,13 +81,13 @@ export class Embedder {
         epochLoss.push(loss);
 
         if (j % progressInterval === 0 || j === batches.length) {
-          progress.update(j);
+          progress.update(j, `Loss: ${round(loss, 5)}`);
         }
       }
 
       const avgLoss =
         epochLoss.reduce((acc, cur) => (acc += cur), 0) / epochLoss.length;
-      console.log(`  Av. loss: ${round(avgLoss, 4)}`);
+      console.log(`  Epoch av. loss: ${round(avgLoss, 4)}`);
     }
 
     return this.neuralNet.getModelState();

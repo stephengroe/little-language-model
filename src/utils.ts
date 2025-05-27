@@ -113,7 +113,7 @@ export function norm(vector: number[]): number {
 export class ProgressBar {
   private total: number;
   private progress: number;
-  private barWidth = 50;
+  private barWidth = 25;
 
   constructor(total: number) {
     this.total = total;
@@ -122,23 +122,26 @@ export class ProgressBar {
     this.update(0);
   }
 
-  update(newProgress: number) {
+  update(newProgress: number, message?: string) {
     if (newProgress > 0) {
       this.progress = newProgress;
     }
     const percent = Math.round((this.progress / this.total) * 100);
-    this.render(Math.min(percent, 100)); // Prevent 100+ percent
+
+    const text = message ? ` ${message}` : '';
+
+    this.render(Math.min(percent, 100), text); // Prevent 100+ percent
 
     if (this.progress >= this.total) {
       this.done();
     }
   }
 
-  render(percent: number) {
+  render(percent: number, message: string) {
     process.stdout.clearLine(1);
     process.stdout.cursorTo(0);
     process.stdout.write(
-      `${percent}% ${this.drawBar()} [${this.progress}/${this.total}]`
+      `${percent}% ${this.drawBar()} [${this.progress}/${this.total}]${message}`
     );
   }
 
