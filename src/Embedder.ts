@@ -169,7 +169,10 @@ export class Embedder {
     return this.embeddings.slice(token, token + this.vectorSize);
   }
 
-  findNearest(targetToken: number, neighbors: number = 3): number[] {
+  findNearest(
+    targetToken: number,
+    neighbors: number = 5
+  ): { token: number; distance: number }[] {
     if (!this.embeddings[targetToken * this.vectorSize]) {
       throw new Error(`Invalid token (received ${targetToken})`);
     }
@@ -180,7 +183,7 @@ export class Embedder {
     );
 
     // Naive solution, computing all values then sorting
-    const similarities = [];
+    let similarities: { token: number; distance: number }[] = [];
     for (let i = 0; i < this.vocabularySize; i++) {
       const vector = Array.from(
         this.embeddings.subarray(
@@ -190,13 +193,11 @@ export class Embedder {
       );
 
       const similarity: number = getCosineSimilarity(targetVector, vector);
-      similarities[i] = [i, similarity];
+      similarities[i] = { token: i, distance: similarity };
     }
 
-    const nearesetNeighbors: number[] = similarities
-      .sort((a, b) => b[1] - a[1])
-      .map((val) => Number(val[0]));
+    similarities = similarities.sort((a, b) => b.distance - a.distance);
 
-    return nearesetNeighbors.slice(0, neighbors);
+    return similarities.slice(0, neighbors);
   }
 }

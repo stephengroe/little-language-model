@@ -1,5 +1,5 @@
 import { mkdir } from 'fs/promises';
-import { saveFile, loadFile, formatTimestampAsISO } from './utils';
+import { saveFile, formatTimestampAsISO, round } from './utils';
 import { Corpus } from './Corpus';
 import { Tokenizer } from './Tokenizer';
 import { trainingConfig } from './config';
@@ -137,9 +137,9 @@ function sampleTokens(tokenizer: Tokenizer, embedder: Embedder) {
       sampleToken,
       trainingConfig.embedding.nearestNeighbors
     );
-    nearestNeighbors.forEach((token, index) => {
+    nearestNeighbors.forEach(({ token, distance }, index) => {
       const word = tokenizer.getWordFromToken(token);
-      console.log(`   ${index + 1}) ${word}`);
+      console.log(`   ${index + 1}. ${word} (${round(distance)})`);
     });
   }
 }
