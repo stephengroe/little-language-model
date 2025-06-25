@@ -177,3 +177,56 @@ export function toOneHot(
 
   return oneHot;
 }
+
+// Matrix-to-matrix multiplication
+export function matrixMultiply(x: number[][], y: number[][]): number[][] {
+  const rowsX = x.length;
+  const colsX = x[0].length;
+  const rowsY = y.length;
+  const colsY = y[0].length;
+
+  if (colsX !== rowsY) {
+    throw new Error(
+      `Mismatched matrix sizes: X columns (${colsX}) =/= Y rows (${rowsY})`
+    );
+  }
+
+  const result: number[][] = Array.from({ length: rowsX }, () => {
+    return new Array(colsY).fill(0);
+  });
+
+  for (let i = 0; i < rowsX; i++) {
+    for (let j = 0; j < colsY; j++) {
+      let sum = 0;
+
+      for (let k = 0; k < colsX; k++) {
+        sum += x[i][k] * y[k][j];
+      }
+      result[i][j] = sum;
+    }
+  }
+
+  return result;
+}
+
+// Matrix-to-vector multiplication
+export function matrixVectorMultiply(mat: number[][], vec: number[]): number[] {
+  const rows = mat.length;
+  const cols = mat[0].length;
+
+  if (cols !== vec.length) {
+    throw new Error(
+      `Mixmatched matrix/vector: columns (${cols}) =/= vector length (${vec.length})`
+    );
+  }
+
+  const result = new Array(rows).fill(0);
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      result[i] += mat[i][j] * vec[j];
+    }
+  }
+
+  return result;
+}
