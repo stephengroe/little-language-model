@@ -1,10 +1,12 @@
-import { matrixVectorMultiply, softmax } from './utils';
+import { matrixVectorMultiply, softmax, toOneHot } from './utils';
 
 export class Matrix {
   private W1: number[][];
   private W2: number[][];
+  private vocabSize: number;
 
   constructor(embeddingSize: number, vocabSize: number) {
+    this.vocabSize = vocabSize;
     this.W1 = Array.from({ length: vocabSize }, () => {
       return Array.from({ length: embeddingSize }, () => Math.random() - 0.5);
     });
@@ -19,5 +21,15 @@ export class Matrix {
     const prediction = softmax(output);
 
     return prediction;
+  }
+
+  train(x: number[], targetIndex: number, learningRate: number): number {
+    const prediction = this.forward(x);
+    const answer = toOneHot(targetIndex, this.vocabSize);
+    const loss = this.loss(prediction, answer);
+
+    this.backward(prediction, targetIndex, learningRate);
+
+    return loss;
   }
 }
