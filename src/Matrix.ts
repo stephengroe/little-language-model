@@ -32,4 +32,11 @@ export class Matrix {
 
     return loss;
   }
+
+  loss(predicted: number[], target: number[]): number {
+    const targetIndex = target.findIndex((n) => n === 1);
+    const epsilon = 1e-15; // to prevent log(0) error
+    const prob = Math.max(predicted[targetIndex], epsilon);
+    return -Math.log(prob);
+  }
 }
