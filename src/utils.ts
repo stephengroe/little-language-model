@@ -230,3 +230,13 @@ export function matrixVectorMultiply(mat: number[][], vec: number[]): number[] {
 
   return result;
 }
+
+export function outerProduct(vecA: number[], vecB: number[]): number[][] {
+  return vecA.map((a) => vecB.map((b) => a * b));
+}
+
+export function transpose(matrix: number[][]): number[][] {
+  return matrix[0].map((_, columnIndex) =>
+    matrix.map((row) => row[columnIndex])
+  );
+}
