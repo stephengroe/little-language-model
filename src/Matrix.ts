@@ -4,9 +4,15 @@ export class Matrix {
   private W1: number[][];
   private W2: number[][];
   private vocabSize: number;
+  private input: number[];
+  private hidden: number[];
+  private output: number[];
 
   constructor(embeddingSize: number, vocabSize: number) {
     this.vocabSize = vocabSize;
+    this.input = [];
+    this.hidden = [];
+    this.output = [];
     this.W1 = Array.from({ length: vocabSize }, () => {
       return Array.from({ length: embeddingSize }, () => Math.random() - 0.5);
     });
@@ -16,9 +22,10 @@ export class Matrix {
   }
 
   forward(x: number[]): number[] {
-    const hidden = matrixVectorMultiply(this.W1, x);
-    const output = matrixVectorMultiply(this.W2, hidden);
-    const prediction = softmax(output);
+    this.input = x;
+    this.hidden = matrixVectorMultiply(this.W1, x);
+    this.output = matrixVectorMultiply(this.W2, this.hidden);
+    const prediction = softmax(this.output);
 
     return prediction;
   }
@@ -38,5 +45,18 @@ export class Matrix {
     const epsilon = 1e-15; // to prevent log(0) error
     const prob = Math.max(predicted[targetIndex], epsilon);
     return -Math.log(prob);
+  }
+
+  backward(prediction: number[], targetIndex: number, learningRate: number) {
+    const target = toOneHot(targetIndex, this.vocabSize);
+    const dOutput = prediction.map((p, i) => p - target[i]);
+
+    const W2_grad = outerProduct(this.hidden, dOutput);
+    this.W2 = applyGradient(this.W2, W2_grad, learningRate);
+
+    const dHidden = matrixVectorMultiply(transpose(this.W2), dOutput);
+
+    const W1_grad = outerProduct(dHidden, this.input);
+    this.W1 = applyGradient(this.W1, transpose(W1_grad), learningRate);
   }
 }
