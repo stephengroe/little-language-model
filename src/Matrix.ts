@@ -1,4 +1,10 @@
-import { matrixVectorMultiply, softmax, toOneHot } from './utils';
+import {
+  matrixVectorMultiply,
+  softmax,
+  toOneHot,
+  outerProduct,
+  transpose,
+} from './utils';
 
 export class Matrix {
   private W1: number[][];
@@ -52,11 +58,21 @@ export class Matrix {
     const dOutput = prediction.map((p, i) => p - target[i]);
 
     const W2_grad = outerProduct(this.hidden, dOutput);
-    this.W2 = applyGradient(this.W2, W2_grad, learningRate);
+    this.W2 = this.applyGradient(this.W2, W2_grad, learningRate);
 
     const dHidden = matrixVectorMultiply(transpose(this.W2), dOutput);
 
     const W1_grad = outerProduct(dHidden, this.input);
-    this.W1 = applyGradient(this.W1, transpose(W1_grad), learningRate);
+    this.W1 = this.applyGradient(this.W1, transpose(W1_grad), learningRate);
+  }
+
+  applyGradient(
+    W: number[][],
+    gradient: number[][],
+    learningRate: number
+  ): number[][] {
+    return W.map((row, i) => {
+      return row.map((val, j) => val - learningRate * gradient[i][j]);
+    });
   }
 }
