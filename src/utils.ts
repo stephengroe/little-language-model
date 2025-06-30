@@ -210,21 +210,21 @@ export function matrixMultiply(x: number[][], y: number[][]): number[][] {
 }
 
 // Matrix-to-vector multiplication
-export function matrixVectorMultiply(mat: number[][], vec: number[]): number[] {
+export function vectorMatrixMultiply(vec: number[], mat: number[][]): number[] {
   const rows = mat.length;
   const cols = mat[0].length;
 
-  if (cols !== vec.length) {
+  if (rows !== vec.length) {
     throw new Error(
-      `Mixmatched matrix/vector: columns (${cols}) =/= vector length (${vec.length})`
+      `Mixmatched matrix/vector: rows (${rows}) =/= vector length (${vec.length})`
     );
   }
 
-  const result = new Array(rows).fill(0);
+  const result = new Array(cols).fill(0);
 
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      result[i] += mat[i][j] * vec[j];
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      result[i] += mat[j][i] * vec[j];
     }
   }
 

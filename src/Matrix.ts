@@ -1,5 +1,5 @@
 import {
-  matrixVectorMultiply,
+  vectorMatrixMultiply,
   softmax,
   toOneHot,
   outerProduct,
@@ -29,8 +29,8 @@ export class Matrix {
 
   forward(x: number[]): number[] {
     this.input = x;
-    this.hidden = matrixVectorMultiply(this.W1, x);
-    this.output = matrixVectorMultiply(this.W2, this.hidden);
+    this.hidden = vectorMatrixMultiply(x, this.W1);
+    this.output = vectorMatrixMultiply(this.hidden, this.W2);
     const prediction = softmax(this.output);
 
     return prediction;
@@ -60,7 +60,7 @@ export class Matrix {
     const W2_grad = outerProduct(this.hidden, dOutput);
     this.W2 = this.applyGradient(this.W2, W2_grad, learningRate);
 
-    const dHidden = matrixVectorMultiply(transpose(this.W2), dOutput);
+    const dHidden = vectorMatrixMultiply(dOutput, transpose(this.W2));
 
     const W1_grad = outerProduct(dHidden, this.input);
     this.W1 = this.applyGradient(this.W1, transpose(W1_grad), learningRate);
@@ -74,5 +74,9 @@ export class Matrix {
     return W.map((row, i) => {
       return row.map((val, j) => val - learningRate * gradient[i][j]);
     });
+  }
+
+  getEmbedding(index: number): number[] {
+    return this.W1[index];
   }
 }
