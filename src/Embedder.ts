@@ -1,4 +1,3 @@
-import { ModelState, NeuralNetwork } from './NeuralNetwork';
 import {
   shuffleArray,
   getCosineSimilarity,
@@ -6,9 +5,10 @@ import {
   norm,
   ProgressBar,
   toOneHot,
+  saveFile,
 } from './utils';
-import { saveFile } from './utils';
 import { TrainingData, TrainingBatch, DataLoader } from './DataLoader';
+import { Matrix } from './Matrix';
 
 // For CBOW
 export type CBOWPair = {
@@ -20,9 +20,9 @@ export class Embedder {
   // Create vocabulary
   private vocabularySize: number;
   private vectorSize: number;
-  private neuralNet: NeuralNetwork;
   private trainingData: number[];
   private embeddings: Float32Array;
+  private matrix: Matrix;
 
   // Constructor
   constructor(
@@ -34,13 +34,7 @@ export class Embedder {
     this.vectorSize = vectorSize;
     this.trainingData = trainingData;
     this.embeddings = new Float32Array(vocabularySize * vectorSize);
-
-    const neuralNetLayers = [
-      this.vocabularySize,
-      vectorSize,
-      this.vocabularySize,
-    ];
-    this.neuralNet = new NeuralNetwork(neuralNetLayers);
+    this.matrix = new Matrix(vectorSize, vocabularySize);
   }
 
   // Train
@@ -50,7 +44,7 @@ export class Embedder {
     learningRate: number,
     epochs: number,
     logInterval: number = 0.1 // default of 10%
-  ): ModelState {
+  ) {
     const trainingExamples = this.generateCBOWPairs(contextWindow);
 
     const dataLoader = new DataLoader(trainingExamples);
@@ -66,16 +60,11 @@ export class Embedder {
 
       for (let j = 0; j < batches.length; j++) {
         let { batchInputs, batchTargets } = batches[j];
-        const oneHotInputs = batchInputs.map((input) => {
-          return toOneHot(input, this.vocabularySize);
-        });
-        const oneHotTargets = batchTargets.map((target) =>
-          toOneHot(target, this.vocabularySize)
-        );
+        const oneHotInput = toOneHot(batchInputs[0], this.vocabularySize);
 
-        const loss = this.neuralNet.train(
-          oneHotInputs,
-          oneHotTargets,
+        const loss = this.matrix.train(
+          oneHotInput,
+          batchTargets[0],
           learningRate
         );
         epochLoss.push(loss);
@@ -89,8 +78,6 @@ export class Embedder {
         epochLoss.reduce((acc, cur) => (acc += cur), 0) / epochLoss.length;
       console.log(`  Epoch av. loss: ${round(avgLoss, 4)}`);
     }
-
-    return this.neuralNet.getModelState();
   }
 
   generateCBOWPairs(contextWindow: number): CBOWPair[] {
@@ -115,35 +102,13 @@ export class Embedder {
     return trainingData;
   }
 
-  async saveNeuralNet() {
-    await saveFile(
-      './',
-      'initial-neural-net.json',
-      JSON.stringify(this.neuralNet.getModelState(), null, 2)
-    );
-  }
-
-  buildFromSavedModel(savedModel: ModelState, vocabularySize: number) {
-    const neuralNetLayers = savedModel.layers.map((layer) => {
-      return layer.weights.length;
-    });
-    // Add input layer
-    neuralNetLayers.unshift(vocabularySize);
-    this.neuralNet = new NeuralNetwork(neuralNetLayers);
-
-    this.neuralNet.buildFromSavedModel(savedModel);
-  }
-
   buildEmbeddings(logInterval: number = 0.01) {
     const progress = new ProgressBar(this.vocabularySize);
     const progressInterval = this.vocabularySize * logInterval;
     // Clear any existing embeddings
     this.embeddings = new Float32Array(this.vocabularySize * this.vectorSize);
-    const lastLayer = this.neuralNet.getLayers().length - 1;
-
     for (let i = 0; i < this.vocabularySize; i++) {
-      const vocabOneHot = toOneHot(i, this.vocabularySize);
-      const vector = this.neuralNet.forwardToLayer(vocabOneHot, lastLayer);
+      const vector = this.matrix.getEmbedding(i);
 
       for (let j = 0; j < this.vectorSize; j++) {
         this.embeddings[i * this.vectorSize + j] = vector[j];
