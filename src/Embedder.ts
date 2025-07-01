@@ -46,11 +46,13 @@ export class Embedder {
     logInterval: number = 0.1 // default of 10%
   ) {
     const trainingExamples = this.generateCBOWPairs(contextWindow);
-
     const dataLoader = new DataLoader(trainingExamples);
 
     // Epochs
     for (let i = 0; i < epochs; i++) {
+      // Linear decay
+      const adjustedLearningRate = learningRate * (1 - i / epochs);
+
       console.log(`\nEpoch #${i + 1}`);
       const batches = dataLoader.batch(batchSize, true);
       const progress = new ProgressBar(batches.length);
@@ -64,7 +66,11 @@ export class Embedder {
           toOneHot(row, this.vocabularySize)
         );
 
-        const loss = this.matrix.train(oneHotInput, batchTargets, learningRate);
+        const loss = this.matrix.train(
+          oneHotInput,
+          batchTargets,
+          adjustedLearningRate
+        );
         epochLoss.push(loss);
 
         if (j % progressInterval === 0 || j === batches.length) {
