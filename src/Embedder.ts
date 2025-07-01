@@ -60,13 +60,11 @@ export class Embedder {
 
       for (let j = 0; j < batches.length; j++) {
         let { batchInputs, batchTargets } = batches[j];
-        const oneHotInput = toOneHot(batchInputs[0], this.vocabularySize);
-
-        const loss = this.matrix.train(
-          oneHotInput,
-          batchTargets[0],
-          learningRate
+        const oneHotInput = batchInputs.map((row) =>
+          toOneHot(row, this.vocabularySize)
         );
+
+        const loss = this.matrix.train(oneHotInput, batchTargets, learningRate);
         epochLoss.push(loss);
 
         if (j % progressInterval === 0 || j === batches.length) {
