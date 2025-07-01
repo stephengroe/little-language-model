@@ -75,11 +75,6 @@ async function main() {
     trainingConfig.embedding.logInterval
   );
   console.timeEnd(`Training embeddings`);
-  await saveFile(
-    filePath,
-    `model-state.json`,
-    JSON.stringify(embeddingModel, null, 2)
-  );
   console.log(`Building embeddings...`);
   embedder.buildEmbeddings(trainingConfig.embedding.logInterval);
 
