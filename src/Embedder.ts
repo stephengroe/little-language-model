@@ -50,17 +50,19 @@ export class Embedder {
 
     // Epochs
     for (let i = 0; i < epochs; i++) {
-      // Linear decay
-      const adjustedLearningRate = learningRate * (1 - i / epochs);
-
       console.log(`\nEpoch #${i + 1}`);
       const batches = dataLoader.batch(batchSize, true);
       const progress = new ProgressBar(batches.length);
       const progressInterval = Math.floor(batches.length * logInterval);
-
       const epochLoss: number[] = [];
+      const totalSteps = epochs * batches.length;
 
       for (let j = 0; j < batches.length; j++) {
+        // Linear decay
+        const currentStep = i * batches.length + j;
+        const decayFactor = Math.max(0, 1 - currentStep / totalSteps);
+        const adjustedLearningRate = learningRate * decayFactor;
+
         let { batchInputs, batchTargets } = batches[j];
         const oneHotInput = batchInputs.map((row) =>
           toOneHot(row, this.vocabularySize)
