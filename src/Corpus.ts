@@ -18,6 +18,21 @@ export class Corpus {
     if (!content.trim()) {
       throw new Error('Content for corpus cannot be an empty string');
     }
+
+    // Remove duplicate spaces
+    let revisedContent: string[] = [];
+    let prevChar = '';
+
+    for (let char of content) {
+      if (char === ' ' && prevChar === ' ') return;
+      if (char === '\n') {
+        if (prevChar === ' ') return;
+        else char = ' ';
+      }
+
+      revisedContent.push(char);
+    }
+
     // Divide into words
     const contentWords = content.split(/\s+/);
 
