@@ -19,19 +19,19 @@ export class Corpus {
       throw new Error('Content for corpus cannot be an empty string');
     }
 
-    // // Remove duplicate spaces
-    // let revisedContent: string[] = [];
-    // let prevChar = '';
+    // Remove duplicate spaces
+    let revisedContent: string[] = [];
+    let prevChar = '';
 
-    // for (let char of content) {
-    //   if (char === ' ' && prevChar === ' ') return;
-    //   if (char === '\n') {
-    //     if (prevChar === ' ') return;
-    //     else char = ' ';
-    //   }
+    for (let char of content) {
+      if (char === ' ' && prevChar === ' ') return;
+      if (char === '\n') {
+        if (prevChar === ' ') return;
+        else char = ' ';
+      }
 
-    //   revisedContent.push(char);
-    // }
+      revisedContent.push(char);
+    }
 
     const contentWords = content.match(/ ?\p{L}+| ?\p{N}+| ?\p{P}+/gu) || [];
 
