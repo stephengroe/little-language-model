@@ -129,7 +129,6 @@ export class Tokenizer {
 
       if (totalTokens % 1000 === 0) {
         progress.update(totalTokens);
-        // console.log(`Merged ${totalTokens}/${vocabularySize} tokens`);
       }
     }
   }

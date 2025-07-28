@@ -40,7 +40,7 @@ function getNextWord(word: string, wordMap: wordMap) {
 function generateParagraph(initialWord: string, wordMap: wordMap, max: number) {
   // Ensure word exists
   if (!wordMap[initialWord]) {
-    console.log(
+    console.warn(
       `The word '${initialWord}' doesn't appear in our database. Using a placeholder instead.`
     );
     initialWord = 'Marley';

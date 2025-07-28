@@ -45,11 +45,17 @@ async function main() {
   const tokenizer = new Tokenizer(corpus.getTexts());
   tokenizer.mergeAllTokenPairs(trainingConfig.embedding.vocabularySize);
   tokenizer.tokenizeCorpus();
-  console.log(`Original corpus: ${tokenizer.getTokenizedCorpus().length}`);
+  console.log(
+    `Original corpus: ${tokenizer.getTokenizedCorpus().length.toLocaleString()}`
+  );
   tokenizer.filterLowFrequency(5);
-  console.log(`Low-F  filtered: ${tokenizer.getTokenizedCorpus().length}`);
+  console.log(
+    `Low-F  filtered: ${tokenizer.getTokenizedCorpus().length.toLocaleString()}`
+  );
   tokenizer.applySubsampling();
-  console.log(`When subsampled: ${tokenizer.getTokenizedCorpus().length}`);
+  console.log(
+    `When subsampled: ${tokenizer.getTokenizedCorpus().length.toLocaleString()}`
+  );
   await saveFile(
     filePath,
     `tokens.json`,
