@@ -1,8 +1,8 @@
 import { softmax, toOneHot, transpose, matrixMultiply } from './utils';
 
 export class Matrix {
-  private W1: number[][];
-  private W2: number[][];
+  private weights1: number[][];
+  private weights2: number[][];
   private vocabSize: number;
   private input: number[][];
   private hidden: number[][];
@@ -13,18 +13,18 @@ export class Matrix {
     this.input = [];
     this.hidden = [];
     this.output = [];
-    this.W1 = Array.from({ length: vocabSize }, () => {
+    this.weights1 = Array.from({ length: vocabSize }, () => {
       return Array.from({ length: embeddingSize }, () => Math.random() - 0.5);
     });
-    this.W2 = Array.from({ length: embeddingSize }, () => {
+    this.weights2 = Array.from({ length: embeddingSize }, () => {
       return Array.from({ length: vocabSize }, () => Math.random() - 0.5);
     });
   }
 
   forward(x: number[][]): number[][] {
     this.input = x;
-    this.hidden = matrixMultiply(x, this.W1);
-    this.output = matrixMultiply(this.hidden, this.W2);
+    this.hidden = matrixMultiply(x, this.weights1);
+    this.output = matrixMultiply(this.hidden, this.weights2);
     const prediction = this.output.map((row) => softmax(row));
 
     return prediction;
@@ -46,13 +46,21 @@ export class Matrix {
       return row.map((val, j) => val - target[i][j]);
     });
 
-    const W2_grad = matrixMultiply(transpose(this.hidden), dOutput);
-    this.W2 = this.applyGradient(this.W2, W2_grad, learningRate);
+    const weights2_grad = matrixMultiply(transpose(this.hidden), dOutput);
+    this.weights2 = this.applyGradient(
+      this.weights2,
+      weights2_grad,
+      learningRate
+    );
 
-    const dHidden = matrixMultiply(dOutput, transpose(this.W2));
+    const dHidden = matrixMultiply(dOutput, transpose(this.weights2));
 
-    const W1_grad = matrixMultiply(transpose(dHidden), this.input);
-    this.W1 = this.applyGradient(this.W1, transpose(W1_grad), learningRate);
+    const weights1_grad = matrixMultiply(transpose(dHidden), this.input);
+    this.weights1 = this.applyGradient(
+      this.weights1,
+      transpose(weights1_grad),
+      learningRate
+    );
   }
 
   applyGradient(
@@ -80,6 +88,6 @@ export class Matrix {
   }
 
   getEmbedding(index: number): number[] {
-    return this.W1[index];
+    return this.weights1[index];
   }
 }
