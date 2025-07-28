@@ -1,7 +1,6 @@
 import { loadFile } from './utils';
 
 // Constants for tokenization boundaries
-const wordBoundaryToken = '</w>';
 const textSeparatorToken = '<|sep|>';
 
 export class Corpus {
@@ -23,28 +22,21 @@ export class Corpus {
     let revisedContent: string[] = [];
     let prevChar = '';
 
+    // Remove duplicate spaces
     for (let char of content) {
-      if (char === ' ' && prevChar === ' ') return;
-      if (char === '\n') {
-        if (prevChar === ' ') return;
-        else char = ' ';
+      if (char === ' ' && prevChar === ' ') {
+        prevChar = char;
+        continue;
       }
-
       revisedContent.push(char);
+      prevChar = char;
     }
 
-    const contentWords = content.match(/ ?\p{L}+| ?\p{N}+| ?\p{P}+/gu) || [];
+    const contentWords =
+      revisedContent.join('').match(/ ?\p{L}+| ?\p{N}+| ?\p{P}+/gu) || [];
 
-    // Divide into words
-    // const contentWords = content.split(/\s+/);
-
-    // Iterate over each word
     for (const word of contentWords!) {
-      // Split word into characters
       const splitWord = word.split('');
-      // Add end of word token
-      // splitWord.push(wordBoundaryToken);
-      // Add to text
       this.texts.push(splitWord);
     }
 
