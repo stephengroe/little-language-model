@@ -15,10 +15,10 @@ export const trainingConfig = {
     inputTexts: [
       'a-christmas-carol.txt',
       'american-notes.txt',
-      'barnuby-rudge.txt',
+      'barnaby-rudge.txt',
       'bleak-house.txt',
       'david-copperfield.txt',
-      'dombey-adn-son.txt',
+      'dombey-and-son.txt',
       'hard-times.txt',
       'little-dorrit.txt',
       'martin-chuzzlewit.txt',
