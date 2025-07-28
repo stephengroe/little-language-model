@@ -43,7 +43,10 @@ async function main() {
   // Generate tokens
   console.log(`Generating tokens...`);
   const tokenizer = new Tokenizer(corpus.getTexts());
-  tokenizer.mergeAllTokenPairs(trainingConfig.embedding.vocabularySize);
+  tokenizer.mergeAllTokenPairs(
+    trainingConfig.embedding.vocabularySize,
+    trainingConfig.embedding.logInterval
+  );
   tokenizer.tokenizeCorpus();
   console.log(
     `Original corpus: ${tokenizer.getTokenizedCorpus().length.toLocaleString()}`

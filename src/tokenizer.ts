@@ -3,11 +3,8 @@ import { ProgressBar } from './utils';
 export class Tokenizer {
   private wordToToken: Map<string, number>;
   private tokenToWord: Map<number, string>;
-  // Set up corpus for merging
   private texts: string[][];
-  // Set up index (to store locations of pairs for merging)
   private pairIndex: Map<string, Set<number>>;
-  // Set up frequency map
   private frequencyMap: Map<string, number>;
   private tokenizedCorpus: number[];
   private tokenCounts: Map<number, number>;
@@ -48,41 +45,33 @@ export class Tokenizer {
 
   // Merge token pairs in a single word
   mergeWordTokenPair(targetTokenPair: string, targetWordIndex: number) {
-    // Isolate word in corpus
     let targetWord = this.texts[targetWordIndex];
-    // Store positions of future merges
     let mergeIndexes: number[] = [];
 
     // Sliding window across all token pairs
     for (let i = 0; i < targetWord.length; i++) {
-      // If we're at the last character
+      // Skip if we're at the last character
       if (i + 1 >= targetWord.length) continue;
-      // Isolate and name the current pair
       const currentTokenPair = `${targetWord[i]}${targetWord[i + 1]}`;
 
-      // Decrement from frequency map (we'll add later if relevant)
+      // Update frequency map (we'll add later if relevant)
       const frequency = this.frequencyMap.get(currentTokenPair) || 1;
       if (frequency === 1) {
-        // If last entry in frequency map, delete entry
         this.frequencyMap.delete(currentTokenPair);
       } else {
         this.frequencyMap.set(currentTokenPair, frequency - 1);
       }
 
-      // Remove word from index (we'll add later if relevant)
       this.pairIndex.get(targetTokenPair)?.delete(targetWordIndex);
 
       // If we've found a pair to merge
       if (currentTokenPair === targetTokenPair) {
-        // Save in list of indexes
         mergeIndexes.push(i);
       }
     }
 
-    // Perform merges
     let mergeOffset = 0; // Adjust index for words with multiple merges
     for (const mergeIndex of mergeIndexes) {
-      // Merge tokens into one
       targetWord.splice(mergeIndex - mergeOffset, 2, targetTokenPair);
       mergeOffset += 1;
     }
@@ -93,41 +82,32 @@ export class Tokenizer {
 
   // Merge token pairs in corpus
   mergeTokenPair(targetTokenPair: string) {
-    // Get positions of all words with target token pair
     const targetWordIndexes = this.pairIndex.get(targetTokenPair);
-
-    // Return if undefined or no indexed words
     if (!targetWordIndexes || targetWordIndexes.size === 0) return;
-
-    // Iterate over target words
     for (const targetWordIndex of targetWordIndexes) {
       this.mergeWordTokenPair(targetTokenPair, targetWordIndex);
     }
   }
 
   // Merge all token pairs
-  mergeAllTokenPairs(vocabularySize: number): void {
+  mergeAllTokenPairs(vocabularySize: number, logInterval: number = 0.01): void {
     const progress = new ProgressBar(vocabularySize);
-
-    // Start count of all tokens
     let totalTokens = this.wordToToken.size;
+    const progressInterval = Math.floor(totalTokens * logInterval);
 
-    // While we still have merges left, continue
     while (totalTokens < vocabularySize) {
-      // Find most common pair
       const [mostCommonPair, tokenCount] = this.findMostCommonTokenPair();
-      // Error handling to prevent infinite loop
       if (!mostCommonPair) break;
-      // Merge that pair
+
       this.tokenCounts.set(totalTokens, tokenCount);
       this.mergeTokenPair(mostCommonPair);
-      // Add to vocabulary
+
       this.wordToToken.set(mostCommonPair, totalTokens);
       this.tokenToWord.set(totalTokens, mostCommonPair);
-      // Increment merged tokens
+
       totalTokens += 1;
 
-      if (totalTokens % 1000 === 0) {
+      if (totalTokens % progressInterval === 0) {
         progress.update(totalTokens);
       }
     }
