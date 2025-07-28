@@ -1,13 +1,5 @@
-import {
-  shuffleArray,
-  getCosineSimilarity,
-  round,
-  norm,
-  ProgressBar,
-  toOneHot,
-  saveFile,
-} from './utils';
-import { TrainingData, TrainingBatch, DataLoader } from './DataLoader';
+import { getCosineSimilarity, round, ProgressBar, toOneHot } from './utils';
+import { DataLoader } from './DataLoader';
 import { Matrix } from './Matrix';
 
 // For CBOW

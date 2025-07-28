@@ -1,5 +1,4 @@
 import { readFile, writeFile } from 'fs/promises';
-import { prependListener } from 'process';
 
 // Read from disk
 export async function loadFile(

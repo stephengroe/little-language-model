@@ -1,10 +1,4 @@
-import {
-  softmax,
-  toOneHot,
-  outerProduct,
-  transpose,
-  matrixMultiply,
-} from './utils';
+import { softmax, toOneHot, transpose, matrixMultiply } from './utils';
 
 export class Matrix {
   private W1: number[][];
