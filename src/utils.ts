@@ -137,11 +137,13 @@ export class ProgressBar {
   }
 
   render(percent: number, message: string) {
-    process.stdout.clearLine(1);
-    process.stdout.cursorTo(0);
-    process.stdout.write(
-      `${percent}% ${this.drawBar()} [${this.progress}/${this.total}]${message}`
-    );
+    if (process.stdout.isTTY) {
+      process.stdout.clearLine(1);
+      process.stdout.cursorTo(0);
+      process.stdout.write(
+        `${percent}% ${this.drawBar()} [${this.progress}/${this.total}]${message}`
+      );
+    }
   }
 
   drawBar() {
@@ -155,7 +157,9 @@ export class ProgressBar {
   }
 
   done() {
-    process.stdout.write(`\n`);
+    if (process.stdout.isTTY) {
+      process.stdout.write(`\n`);
+    }
   }
 }
 
