@@ -4,8 +4,7 @@
   "main": "./dist/generate.js",
   "scripts": {
     "build": "tsc",
-    "train": "tsx src/train.js",
-    "generate": "tsx src/generate.ts",
+    "train": "tsx src/train.ts",
     "clean": "rm -rf dist",
     "format": "prettier --write .",
     "test": "jest",
@@ -19,7 +18,7 @@
     "@types/node": "^22.14.1",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
-    "ts-jest": "^29.3.2",
+    "ts-jest": "^29.4.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
   }
